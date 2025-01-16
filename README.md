@@ -45,7 +45,7 @@ JAVASTOCK-IMS/
 git clone https://github.com/<your-username>/JAVASTOCK-IMS.git
 ```
 2. Configure the database:
-- Update src/resources/application.properties with your MySQL database credentials.
+- Update src/resources/application.properties with the MySQL database credentials.
 Build and run the project:
 
 ## **License**
