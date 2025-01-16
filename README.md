@@ -32,7 +32,7 @@ JAVASTOCK-IMS/
 │   │   │           ├── view/            # Swing-based UI components
 │   │   │           ├── viewmodel/       # MVVM bridge layer
 │   │   │           ├── App.java         # Application entry point
-│   │   │           └── Router.java      # Navigation manager
+│   │   │           └── Router.java      # Navigation manager (optional, for now)
 │   │   │
 │   │   ├── resources/
 │   │   │   ├── application.properties   # Configuration (e.g., database connection)
@@ -43,15 +43,11 @@ JAVASTOCK-IMS/
 │   ├── test/
 │   │   ├── java/
 │   │   │   └── com/
-│   │   │       └── javastock/
-│   │   │           ├── unit/            # Unit tests for components
-│   │   │           ├── integration/     # Integration tests
-│   │   │           └── e2e/             # End-to-end tests
+│   │   │       └── javastock/            # for testing purposes
 │
 ├── .gitignore                            # Files and folders to ignore in version control
 ├── README.md                             # Project overview and documentation
 └── pom.xml or build.gradle               # Build tool configuration
-
 ```
 
 ## **Technologies**
