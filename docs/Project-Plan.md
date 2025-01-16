@@ -3,7 +3,7 @@
 ## Overview:
 This document outlines the plan for the JAVASTOCK Inventory Management System project, which involves the development of a Java-based inventory management application.
 
-## Phases:
+## **Phases:**
 1. **Phase 1: Planning & Design**
     - Goal: Define scope, design system architecture, and establish database connections.
     - Deliverables: Project plan, UI/UX designs, database schema.
@@ -25,3 +25,9 @@ This document outlines the plan for the JAVASTOCK Inventory Management System pr
 - **Developer 1**: UI design, core functionality implementation.
 - **Developer 2**: Database design, backend integration.
 
+## **Key Milestones**
+**Day 1-2**: Proposal Completed and Initial Project Planning.
+**Day 3-5**: UI Design and Database Development.
+**Day 6-8**: Core Development and Integration Testing.
+**Day 9**: Deployment and Final Documentation.
+**Day 10**: Final Presentation.
