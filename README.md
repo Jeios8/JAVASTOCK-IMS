@@ -17,21 +17,41 @@ The project follows the **MVVM architecture**:
 
 ```plaintext
 JAVASTOCK-IMS/
-├── docs/                   # Documentation for the project
+│
+├── docs/
+│   ├── requirements.md
+│   ├── architecture.md
+│   ├── project-plan.md
+│
 ├── src/
-│   ├── main/               # Application source code
-│   │   ├── model/          # Business logic and database models
-│   │   ├── view/           # UI components and screens
-│   │   ├── viewmodel/      # Connects models and views
-│   │   ├── App.java        # Application entry point
-│   │   └── Router.java     # Navigation between views
-│   ├── test/               # Unit and integration tests
-│   ├── resources/          # Configuration and database scripts
-│   │   ├── application.properties  # DB connection details
-│   │   └── db/                     # SQL scripts for schema and seed data
-├── .gitignore              # Git ignored files and folders
-├── README.md               # Project overview and documentation
-└── pom.xml or build.gradle # Dependency management
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/
+│   │   │       └── javastock/
+│   │   │           ├── model/           # Business logic and database models
+│   │   │           ├── view/            # Swing-based UI components
+│   │   │           ├── viewmodel/       # MVVM bridge layer
+│   │   │           ├── App.java         # Application entry point
+│   │   │           └── Router.java      # Navigation manager
+│   │   │
+│   │   ├── resources/
+│   │   │   ├── application.properties   # Configuration (e.g., database connection)
+│   │   │   └── db/
+│   │   │       ├── schema.sql           # Database schema script
+│   │   │       └── seed.sql             # Sample data for testing
+│   │
+│   ├── test/
+│   │   ├── java/
+│   │   │   └── com/
+│   │   │       └── javastock/
+│   │   │           ├── unit/            # Unit tests for components
+│   │   │           ├── integration/     # Integration tests
+│   │   │           └── e2e/             # End-to-end tests
+│
+├── .gitignore                            # Files and folders to ignore in version control
+├── README.md                             # Project overview and documentation
+└── pom.xml or build.gradle               # Build tool configuration
+
 ```
 
 ## **Technologies**
