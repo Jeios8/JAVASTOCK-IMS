@@ -17,10 +17,10 @@
 ---
 ## **Day 5**
 ## **Developer 1:**
-Continue developing the UI, focusing on functionality and user interactions.
-Ensure all UI components are connected properly to backend services.
+- Continue developing the UI, focusing on functionality and user interactions.
+- Ensure all UI components are connected properly to backend services.
 
 ## **Developer 2:**
-Implement and test more advanced database operations like updates and deletes.
-Validate database performance and optimize queries where necessary.
+- Implement and test more advanced database operations like updates and deletes.
+- Validate database performance and optimize queries where necessary.
 ---
