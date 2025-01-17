@@ -21,7 +21,7 @@ This document outlines the plan for the JAVASTOCK Inventory Management System pr
     - Deliverables: Production-ready system, maintenance documentation.
 
 ## Roles & Responsibilities:
-- **Project Manager**: Overall planning, coordination, risk management.
+- **Project Manager**: Overall planning, coordination, risk management, view model integration.
 - **Developer 1**: UI design, core functionality implementation.
 - **Developer 2**: Database design, backend integration.
 
