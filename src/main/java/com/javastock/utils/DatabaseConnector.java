@@ -1,10 +1,10 @@
+// Updated DatabaseConnector.java
 package main.java.com.javastock.utils;
 
+import main.java.com.javastock.model.User;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Properties;
 
 public class DatabaseConnector {
@@ -41,5 +41,27 @@ public class DatabaseConnector {
         } catch (SQLException e) {
             throw new RuntimeException("Failed to connect to the database: " + dbName, e);
         }
+    }
+
+    public static User getUserByUsername(String username) {
+        String query = "SELECT * FROM users WHERE username = ?";
+        try (Connection connection = getConnection("javastock");
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String employeeId = rs.getString("employee_id");
+                String firstName = rs.getString("first_name");
+                String lastName = rs.getString("last_name");
+                String passwordHash = rs.getString("password");
+                int roleId = rs.getInt("role_id");
+                return new User(employeeId, firstName, lastName, username, passwordHash, roleId);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to fetch user from database", e);
+        }
+        return null;
     }
 }
