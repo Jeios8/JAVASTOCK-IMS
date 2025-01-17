@@ -1,5 +1,6 @@
 package main.java.com.javastock.view;
 
+import main.java.com.javastock.viewmodel.DashboardVM;
 import main.java.com.javastock.viewmodel.LoginVM;
 
 import javax.swing.*;
@@ -115,7 +116,8 @@ public class LoginUI {
                 JOptionPane.showMessageDialog(loginFrame, "Login Successful!");
                 loginFrame.dispose(); // Close the login frame
                 // Transition to MainUI (or next screen)
-                new DashboardUI(); // Assuming MainUI exists
+                DashboardVM viewModel = new DashboardVM();
+                new DashboardUI(viewModel);
             } else {
                 JOptionPane.showMessageDialog(loginFrame, "Invalid Username or Password", "Error", JOptionPane.ERROR_MESSAGE);
             }
