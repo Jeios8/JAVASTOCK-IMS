@@ -41,6 +41,11 @@ public class LoginUI {
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         titlePanel.add(subtitleLabel);
 
+        JPanel leftPanel = new JPanel();
+        leftPanel.setBackground(mainPanel.getBackground());
+        JPanel rightPanel = new JPanel();
+        rightPanel.setBackground(mainPanel.getBackground());
+
         JPanel inputPanel = new JPanel();
         inputPanel.setBackground(mainPanel.getBackground());
         inputPanel.setLayout(new GridLayout(7, 1, 0, 0));
@@ -89,6 +94,8 @@ public class LoginUI {
         bottomPanel.add(Box.createVerticalStrut(50));
         bottomPanel.add(bottomLabel);
 
+        mainPanel.add(leftPanel, BorderLayout.WEST);
+        mainPanel.add(rightPanel, BorderLayout.EAST);
         mainPanel.add(titlePanel, BorderLayout.NORTH);
         mainPanel.add(inputPanel, BorderLayout.CENTER);
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
