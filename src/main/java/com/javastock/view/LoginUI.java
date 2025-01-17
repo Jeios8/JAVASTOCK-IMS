@@ -108,7 +108,7 @@ public class LoginUI {
                 JOptionPane.showMessageDialog(loginFrame, "Login Successful!");
                 loginFrame.dispose(); // Close the login frame
                 // Transition to MainUI (or next screen)
-                new MainUI(); // Assuming MainUI exists
+                new DashboardUI(); // Assuming MainUI exists
             } else {
                 JOptionPane.showMessageDialog(loginFrame, "Invalid Username or Password", "Error", JOptionPane.ERROR_MESSAGE);
             }
