@@ -7,7 +7,7 @@ import main.java.com.javastock.view.LoginUI;
 public class App {
     public static void main(String[] args) {
         // Create a User object with test credentials
-        User testUser = new User("admin", "password123");
+        User testUser = new User("admin", "admin");
 
         // Pass User to LoginVM
         LoginVM loginVM = new LoginVM(testUser);
