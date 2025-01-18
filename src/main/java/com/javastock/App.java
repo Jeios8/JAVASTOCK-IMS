@@ -1,6 +1,7 @@
 // App.java (Main Entry Point)
 package main.java.com.javastock;
 
+import main.java.com.javastock.utils.DatabaseSeeder;
 import main.java.com.javastock.viewmodel.LoginVM;
 import main.java.com.javastock.view.LoginUI;
 

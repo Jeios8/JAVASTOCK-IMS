@@ -12,12 +12,14 @@ description TEXT
 
 -- Users Table
 CREATE TABLE users (
-user_id INT AUTO_INCREMENT PRIMARY KEY,
-username VARCHAR(50) NOT NULL UNIQUE,
-password_hash VARCHAR(255) NOT NULL,
-role_id INT NOT NULL,
-is_active BOOLEAN DEFAULT TRUE,
-FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE RESTRICT
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    role_id INT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE RESTRICT
 );
 
 -- Customers Table
@@ -26,22 +28,6 @@ customer_id INT AUTO_INCREMENT PRIMARY KEY,
 first_name VARCHAR(50) NOT NULL,
 last_name VARCHAR(50) NOT NULL,
 is_active BOOLEAN DEFAULT TRUE
-);
-
--- Products Table
-CREATE TABLE products (
-product_id INT AUTO_INCREMENT PRIMARY KEY,
-product_name VARCHAR(255) NOT NULL,
-description TEXT,
-unit_of_measure VARCHAR(50),
-category_id INT,
-supplier_id INT,
-reorder_level INT DEFAULT 0,
-unit_price DECIMAL(10, 2),
-image_path VARCHAR(255),
-is_active BOOLEAN DEFAULT TRUE,
-FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL,
-FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id) ON DELETE SET NULL
 );
 
 -- Categories Table
@@ -62,6 +48,30 @@ address TEXT,
 is_active BOOLEAN DEFAULT TRUE
 );
 
+-- Warehouses Table
+CREATE TABLE warehouses (
+warehouse_id INT AUTO_INCREMENT PRIMARY KEY,
+warehouse_name VARCHAR(255) NOT NULL,
+location TEXT,
+is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Products Table
+CREATE TABLE products (
+product_id INT AUTO_INCREMENT PRIMARY KEY,
+product_name VARCHAR(255) NOT NULL,
+description TEXT,
+unit_of_measure VARCHAR(50),
+category_id INT,
+supplier_id INT,
+reorder_level INT DEFAULT 0,
+unit_price DECIMAL(10, 2),
+image_path VARCHAR(255),
+is_active BOOLEAN DEFAULT TRUE,
+FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL,
+FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id) ON DELETE SET NULL
+);
+
 -- Inventory Table
 CREATE TABLE inventory (
 inventory_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -72,18 +82,10 @@ FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE SET NULL,
 FOREIGN KEY (warehouse_id) REFERENCES warehouses(warehouse_id) ON DELETE SET NULL
 );
 
--- Warehouses Table
-CREATE TABLE warehouses (
-warehouse_id INT AUTO_INCREMENT PRIMARY KEY,
-warehouse_name VARCHAR(255) NOT NULL,
-location TEXT,
-is_active BOOLEAN DEFAULT TRUE
-);
-
 -- Purchase Orders Table
 CREATE TABLE purchase_orders (
 purchase_order_id INT AUTO_INCREMENT PRIMARY KEY,
-supplier_id INT NOT NULL,
+supplier_id INT,
 order_date DATE NOT NULL,
 expected_arrival_date DATE,
 status ENUM('Pending', 'Ordered', 'Received', 'Cancelled') DEFAULT 'Pending',
@@ -104,7 +106,7 @@ FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE RESTRICT
 -- Sales Orders Table
 CREATE TABLE sales_orders (
 sales_order_id INT AUTO_INCREMENT PRIMARY KEY,
-customer_id INT NOT NULL,
+customer_id INT,
 order_date DATE NOT NULL,
 status ENUM('Pending', 'Processed', 'Shipped', 'Delivered', 'Cancelled') DEFAULT 'Pending',
 FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE SET NULL

@@ -45,19 +45,20 @@ public class DatabaseConnector {
 
     public static User getUserByUsername(String username) {
         String query = "SELECT * FROM users WHERE username = ?";
-        try (Connection connection = getConnection("javastock");
+        try (Connection connection = getConnection("inventorydb");
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                String employeeId = rs.getString("employee_id");
+                int userid = rs.getInt("user_id");
+                String passwordHash = rs.getString("password_hash");
                 String firstName = rs.getString("first_name");
                 String lastName = rs.getString("last_name");
-                String passwordHash = rs.getString("password");
                 int roleId = rs.getInt("role_id");
-                return new User(employeeId, firstName, lastName, username, passwordHash, roleId);
+                boolean isActive = rs.getBoolean("is_active");
+                return new User(userid, username, passwordHash, firstName, lastName, roleId, isActive);
             }
         } catch (SQLException e) {
             throw new RuntimeException("Failed to fetch user from database", e);
