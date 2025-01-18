@@ -122,4 +122,12 @@ unit_price DECIMAL(10, 2),
 FOREIGN KEY (sales_order_id) REFERENCES sales_orders(sales_order_id) ON DELETE CASCADE,
 FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE RESTRICT
 );
+
+-- Inserting initial roles into the roles table
+INSERT INTO roles (role_name, description) VALUES
+('Moderator', 'Responsible for managing user content and maintaining community standards'),
+('Admin', 'Has full access to all system features and settings'),
+('Manager', 'Oversees operations within a specific department or team'),
+('Staff', 'Regular staff member with limited administrative privileges'),
+('Viewer', 'Can view content but has no editing or administrative access');
 ```
