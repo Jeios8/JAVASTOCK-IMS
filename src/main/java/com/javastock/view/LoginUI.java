@@ -4,6 +4,7 @@ import main.java.com.javastock.viewmodel.LoginVM;
 import main.java.com.javastock.viewmodel.MainVM;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,9 +19,9 @@ public class LoginUI {
     private static final Font TITLE_FONT = new Font("Arial", Font.PLAIN, 40);
     private static final Font SUBTITLE_FONT = new Font("Arial", Font.PLAIN, 20);
     private static final Font LABEL_FONT = new Font("Arial", Font.PLAIN, 14);
-    private static final Color BACKGROUND_COLOR = Color.LIGHT_GRAY;
-    private static final Color LOGIN_BUTTON_COLOR = new Color(173, 216, 230);
-    private static final Color EXIT_BUTTON_COLOR = new Color(255, 105, 97);
+    private static final Color BACKGROUND_COLOR = Color.WHITE;
+    private static final Color LOGIN_BUTTON_COLOR = new Color(30, 100, 255);
+    private static final Color EXIT_BUTTON_COLOR = new Color(200, 50, 30);
 
     public LoginUI(LoginVM loginVM) {
         this.loginVM = loginVM;
@@ -139,25 +140,26 @@ public class LoginUI {
         return label;
     }
 
-    private JTextField createTextField() {
-        JTextField textField = new JTextField();
+    private TextField createTextField() {
+        TextField textField = new TextField(15);
         textField.setFont(LABEL_FONT);
+        textField.setMargin(new Insets(5, 10, 5, 10));
         textField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
         return textField;
     }
 
-    private JPasswordField createPasswordField() {
-        JPasswordField passwordField = new JPasswordField();
+    private PasswordField createPasswordField() {
+        PasswordField passwordField = new PasswordField(15);
         passwordField.setFont(LABEL_FONT);
         passwordField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
         return passwordField;
     }
 
     private JButton createButton(String text, Color color, ActionListener actionListener) {
-        JButton button = new JButton(text);
+        Button button = new Button(text);
         button.setFont(LABEL_FONT);
         button.setBackground(color);
-        button.setForeground(Color.BLACK);
+        button.setForeground(Color.WHITE);
         button.addActionListener(actionListener);
         return button;
     }
@@ -227,5 +229,63 @@ public class LoginUI {
         loadingDialog.add(loadingLabel);
         loadingDialog.setUndecorated(true);
         return loadingDialog;
+    }
+}
+class Button extends JButton { //Rounded Buttons
+    public Button(String text) {
+        super(text);
+        setContentAreaFilled(false);
+        this.setBorderPainted(false);
+    }
+    @Override
+    protected void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(getBackground());
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+        g2.setColor(getBackground());
+        g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 20, 20);
+        g2.dispose();
+        super.paintComponent(g);
+    }
+}
+class TextField extends JTextField { //Rounded Text Field
+    public TextField(int columns) {
+        super(columns);
+        setOpaque(false);
+    }
+    @Override
+    protected void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(getBackground());
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
+        g2.setColor(Color.GRAY);
+        g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 30, 30);
+        g2.dispose();
+        super.paintComponent(g);
+    }
+    @Override
+    public void setBorder(Border border) {
+    }
+}
+class PasswordField extends JPasswordField { //Rounded Password Field
+    public PasswordField(int columns) {
+        super(columns);
+        setOpaque(false);
+    }
+    @Override
+    protected void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(getBackground());
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
+        g2.setColor(Color.GRAY);
+        g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 30, 30);
+        g2.dispose();
+        super.paintComponent(g);
+    }
+    @Override
+    public void setBorder(Border border) {
     }
 }
