@@ -2,13 +2,14 @@
 package main.java.com.javastock.utils;
 
 import main.java.com.javastock.model.User;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
 import java.util.Properties;
 
 public class DatabaseConnector {
-    private static final String CONFIG_FILE = "src/main/java/com/javastock/config/application.properties";
+    private static final String CONFIG_FILE = "src/test/java/com/javastock/config/application.properties";
     private static String dbUrl;
     private static String username;
     private static String password;
@@ -45,7 +46,7 @@ public class DatabaseConnector {
 
     public static User getUserByUsername(String username) {
         String query = "SELECT * FROM users WHERE username = ?";
-        try (Connection connection = getConnection("errjava_invdb");
+        try (Connection connection = getConnection("inventorydb");
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
             stmt.setString(1, username);

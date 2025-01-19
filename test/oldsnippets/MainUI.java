@@ -1,20 +1,20 @@
-package snippets;
+package oldsnippets;
 
-import main.java.com.javastock.viewmodel.DashboardVM;
 import main.java.com.javastock.viewmodel.MainVM;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-public class DashboardUI {
-    private DashboardVM viewModel;
+public class MainUI {
+    private MainVM viewModel;
     private JPanel contentPanel;
 
-    public DashboardUI(DashboardVM viewModel) {
+    public MainUI(MainVM viewModel) {
         this.viewModel = viewModel;
         initializeUI();
     }
+
     public void initializeUI() {
         JFrame mainFrame = new JFrame("JAVASTOCK");
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -62,7 +62,7 @@ public class DashboardUI {
         ));
 
         JButton searchButton = new JButton("Search");
-        searchButton.setBackground(new Color(150,200,230));
+        searchButton.setBackground(new Color(150, 200, 230));
         searchButton.setForeground(Color.BLACK);
         searchButton.setFont(regularFont());
         searchButton.setFocusPainted(true);
@@ -74,10 +74,8 @@ public class DashboardUI {
         JPanel rightTopPanel = new JPanel(new BorderLayout());
         rightTopPanel.setBackground(Color.LIGHT_GRAY);
         rightTopPanel.add(searchPanel, BorderLayout.NORTH);
-//CONTENT PANEL
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.setBackground(Color.LIGHT_GRAY);
-
 
         JLabel contentHolder = new JLabel("CONTENT GOES HERE", JLabel.CENTER);
         contentHolder.setFont(regularFont());
@@ -85,7 +83,6 @@ public class DashboardUI {
         contentPanel.add(contentHolder, BorderLayout.CENTER);
 
         rightTopPanel.add(contentPanel, BorderLayout.CENTER);
-
 
         mainPanel.add(menuPanel, BorderLayout.WEST);
         mainPanel.add(rightTopPanel, BorderLayout.CENTER);

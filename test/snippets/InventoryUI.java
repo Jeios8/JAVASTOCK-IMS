@@ -1,29 +1,20 @@
 package snippets;
 
-import main.java.com.javastock.viewmodel.DashboardVM;
-import main.java.com.javastock.viewmodel.MainVM;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-public class DashboardUI {
-    private DashboardVM viewModel;
-    private JPanel contentPanel;
-
-    public DashboardUI(DashboardVM viewModel) {
-        this.viewModel = viewModel;
-        initializeUI();
-    }
-    public void initializeUI() {
+public class InventoryUI {
+    public static void main(String[] args) {
         JFrame mainFrame = new JFrame("JAVASTOCK");
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainFrame.setSize(1280, 720);
         mainFrame.setLocationRelativeTo(null);
-//MAIN PANEL
+//MAIN PANEL(BACKGROUND)
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout(20, 20));
         mainPanel.setBackground(Color.LIGHT_GRAY);
+
 //LEFT MENU PANEL
         JPanel menuPanel = new JPanel();
         menuPanel.setBackground(Color.WHITE);
@@ -49,6 +40,7 @@ public class DashboardUI {
         menuPanel.add(createPlaceholder());
         menuPanel.add(createPlaceholder());
         menuPanel.add(createButton("Logout"));
+
 //TOP SEARCH PANEL
         JPanel searchPanel = new JPanel(new BorderLayout());
         searchPanel.setBorder(new EmptyBorder(15, 5, 15, 650));
@@ -74,22 +66,21 @@ public class DashboardUI {
         JPanel rightTopPanel = new JPanel(new BorderLayout());
         rightTopPanel.setBackground(Color.LIGHT_GRAY);
         rightTopPanel.add(searchPanel, BorderLayout.NORTH);
+
 //CONTENT PANEL
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.setBackground(Color.LIGHT_GRAY);
 
-
-        JLabel contentHolder = new JLabel("CONTENT GOES HERE", JLabel.CENTER);
+        JLabel contentHolder = new JLabel("INVENTORY CONTENT GOES HERE", JLabel.CENTER);
         contentHolder.setFont(regularFont());
         contentHolder.setBackground(Color.LIGHT_GRAY);
         contentPanel.add(contentHolder, BorderLayout.CENTER);
 
+
         rightTopPanel.add(contentPanel, BorderLayout.CENTER);
-
-
+//ADD ELEMENTS HERE
         mainPanel.add(menuPanel, BorderLayout.WEST);
         mainPanel.add(rightTopPanel, BorderLayout.CENTER);
-
         mainFrame.add(mainPanel);
         mainFrame.setVisible(true);
     }

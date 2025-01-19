@@ -1,7 +1,7 @@
 package main.java.com.javastock.view;
 
-import main.java.com.javastock.viewmodel.DashboardVM;
 import main.java.com.javastock.viewmodel.LoginVM;
+import main.java.com.javastock.viewmodel.MainVM;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,10 +9,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class LoginUI {
-    private JFrame loginFrame;
-    private JTextField usernameField;
-    private JPasswordField passwordField;
-    private LoginVM loginVM; // ViewModel instance for handling business logic
+    private final JFrame loginFrame;
+    private JTextField usernameField;  // Changed to non-final
+    private JPasswordField passwordField;  // Changed to non-final
+    private final LoginVM loginVM;
+
+    // Shared UI constants
+    private static final Font TITLE_FONT = new Font("Arial", Font.PLAIN, 40);
+    private static final Font SUBTITLE_FONT = new Font("Arial", Font.PLAIN, 20);
+    private static final Font LABEL_FONT = new Font("Arial", Font.PLAIN, 14);
+    private static final Color BACKGROUND_COLOR = Color.LIGHT_GRAY;
+    private static final Color LOGIN_BUTTON_COLOR = new Color(173, 216, 230);
+    private static final Color EXIT_BUTTON_COLOR = new Color(255, 105, 97);
 
     public LoginUI(LoginVM loginVM) {
         this.loginVM = loginVM;
@@ -23,104 +31,201 @@ public class LoginUI {
         loginFrame.setLocationRelativeTo(null);
         loginFrame.setResizable(false);
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout(20, 20));
-        mainPanel.setBackground(Color.LIGHT_GRAY);
+        // Initialize main layout
+        JPanel mainPanel = new JPanel(new BorderLayout(20, 20));
+        mainPanel.setBackground(BACKGROUND_COLOR);
 
+        // Add sub-panels
+        mainPanel.add(createTitlePanel(), BorderLayout.NORTH);
+        mainPanel.add(createInputPanel(), BorderLayout.CENTER);
+        mainPanel.add(createBottomPanel(), BorderLayout.SOUTH);
+
+        // Padding
+        JPanel leftPadding = new JPanel();
+        JPanel rightPadding = new JPanel();
+
+        leftPadding.setBackground(mainPanel.getBackground());
+        rightPadding.setBackground(mainPanel.getBackground());
+
+        leftPadding.setPreferredSize(new Dimension(20, 0));  // 20px left padding
+        rightPadding.setPreferredSize(new Dimension(20, 0)); // 20px right padding
+
+        mainPanel.add(leftPadding, BorderLayout.WEST);
+        mainPanel.add(rightPadding, BorderLayout.EAST);
+
+        loginFrame.add(mainPanel);
+        loginFrame.setVisible(true);
+
+        usernameField.requestFocus();
+    }
+
+    private JPanel createTitlePanel() {
         JPanel titlePanel = new JPanel();
-        titlePanel.setBackground(mainPanel.getBackground());
-        titlePanel.add(Box.createVerticalStrut(50));
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
+        titlePanel.setBackground(BACKGROUND_COLOR);
 
         JLabel titleLabel = new JLabel("JAVASTOCK");
-        titleLabel.setFont(new Font("Arial", Font.PLAIN, 40));
+        titleLabel.setFont(TITLE_FONT);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        titlePanel.add(titleLabel);
 
         JLabel subtitleLabel = new JLabel("Inventory Management System");
-        subtitleLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+        subtitleLabel.setFont(SUBTITLE_FONT);
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        titlePanel.add(Box.createVerticalStrut(50));
+        titlePanel.add(titleLabel);
         titlePanel.add(subtitleLabel);
 
-        JPanel leftPanel = new JPanel();
-        leftPanel.setBackground(mainPanel.getBackground());
-        JPanel rightPanel = new JPanel();
-        rightPanel.setBackground(mainPanel.getBackground());
+        return titlePanel;
+    }
 
-        JPanel inputPanel = new JPanel();
-        inputPanel.setBackground(mainPanel.getBackground());
-        inputPanel.setLayout(new GridLayout(7, 1, 0, 0));
+    private JPanel createInputPanel() {
+        JPanel inputPanel = new JPanel(new GridLayout(7, 1, 0, 0));
+        inputPanel.setBackground(BACKGROUND_COLOR);
 
-        JLabel usernameLabel = new JLabel("Username:");
-        usernameLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        usernameLabel.setForeground(Color.BLACK);
-
-        usernameField = new JTextField();
-        usernameField.setFont(new Font("Arial", Font.PLAIN, 14));
+        JLabel usernameLabel = createLabel("Username:");
+        usernameField = createTextField();
         usernameField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 
-        JLabel passwordLabel = new JLabel("Password:");
-        passwordLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        passwordLabel.setForeground(Color.BLACK);
-
-        passwordField = new JPasswordField();
-        passwordField.setFont(new Font("Arial", Font.PLAIN, 14));
+        JLabel passwordLabel = createLabel("Password:");
+        passwordField = createPasswordField();
         passwordField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 
-        JButton loginButton = new JButton("Login");
-        loginButton.setFont(new Font("Arial", Font.PLAIN, 14));
-        loginButton.setBackground(new Color(173, 216, 230));
-        loginButton.setForeground(Color.BLACK);
-        loginButton.addActionListener(new LoginButtonListener()); // Attach the listener
+        JButton loginButton = createButton("Login", LOGIN_BUTTON_COLOR, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleLogin();
+            }
+        });
 
-        JButton exitButton = new JButton("Exit");
-        exitButton.setFont(new Font("Arial", Font.PLAIN, 14));
-        exitButton.setBackground(new Color(255, 105, 97));
-        exitButton.setForeground(Color.BLACK);
-        exitButton.addActionListener(e -> System.exit(0)); // Close the application
+        JButton exitButton = createButton("Exit", EXIT_BUTTON_COLOR, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
 
         inputPanel.add(usernameLabel);
         inputPanel.add(usernameField);
         inputPanel.add(passwordLabel);
         inputPanel.add(passwordField);
-        inputPanel.add(new JLabel(""));
+        inputPanel.add(new JLabel("")); // Spacer
         inputPanel.add(loginButton);
         inputPanel.add(exitButton);
 
+        // Set default button for Enter key
+        loginFrame.getRootPane().setDefaultButton(loginButton);
+
+        return inputPanel;
+    }
+
+    private JPanel createBottomPanel() {
         JPanel bottomPanel = new JPanel();
-        bottomPanel.setBackground(Color.LIGHT_GRAY);
+        bottomPanel.setBackground(BACKGROUND_COLOR);
+
         JLabel bottomLabel = new JLabel("Powered by ERR Software Solutions");
         bottomLabel.setFont(new Font("Arial", Font.PLAIN, 12));
         bottomLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         bottomPanel.add(Box.createVerticalStrut(50));
+
         bottomPanel.add(bottomLabel);
-
-        mainPanel.add(leftPanel, BorderLayout.WEST);
-        mainPanel.add(rightPanel, BorderLayout.EAST);
-        mainPanel.add(titlePanel, BorderLayout.NORTH);
-        mainPanel.add(inputPanel, BorderLayout.CENTER);
-        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
-
-        loginFrame.add(mainPanel);
-        loginFrame.setVisible(true);
+        return bottomPanel;
     }
 
-    // ActionListener for login button
-    private class LoginButtonListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String username = usernameField.getText();
-            String password = new String(passwordField.getPassword());
+    private JLabel createLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(LABEL_FONT);
+        label.setForeground(Color.BLACK);
+        return label;
+    }
 
-            if (loginVM.validateLogin(username, password)) {
-                JOptionPane.showMessageDialog(loginFrame, "Login Successful!");
-                loginFrame.dispose(); // Close the login frame
-                // Transition to MainUI (or next screen)
-                DashboardVM viewModel = new DashboardVM();
-                new DashboardUI(viewModel);
+    private JTextField createTextField() {
+        JTextField textField = new JTextField();
+        textField.setFont(LABEL_FONT);
+        textField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        return textField;
+    }
+
+    private JPasswordField createPasswordField() {
+        JPasswordField passwordField = new JPasswordField();
+        passwordField.setFont(LABEL_FONT);
+        passwordField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        return passwordField;
+    }
+
+    private JButton createButton(String text, Color color, ActionListener actionListener) {
+        JButton button = new JButton(text);
+        button.setFont(LABEL_FONT);
+        button.setBackground(color);
+        button.setForeground(Color.BLACK);
+        button.addActionListener(actionListener);
+        return button;
+    }
+
+    private void handleLogin() {
+        String username = usernameField.getText().trim();
+        String password = new String(passwordField.getPassword()).trim();
+
+        if (username.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(loginFrame, "Username and Password cannot be empty.",
+                    "Validation Error", JOptionPane.WARNING_MESSAGE);
+            if (username.isEmpty()) {
+                usernameField.requestFocus();
             } else {
-                JOptionPane.showMessageDialog(loginFrame, "Invalid Username or Password", "Error", JOptionPane.ERROR_MESSAGE);
+                passwordField.requestFocus();
             }
+            return;
         }
+
+        // Create and show loading dialog
+        JDialog loadingDialog = createLoadingDialog();
+        SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
+            @Override
+            protected Boolean doInBackground() throws InterruptedException {
+                // Simulated delay, replace with actual validation logic
+                Thread.sleep(1000);
+                return loginVM.validateLogin(username, password);
+            }
+
+            @Override
+            protected void done() {
+                loadingDialog.dispose();
+                try {
+                    if (get()) {
+                        new MainUI(new MainVM()); // Transition to MainUI
+                        loginFrame.dispose();
+                    } else {
+                        JOptionPane.showMessageDialog(loginFrame, "Invalid Username or Password",
+                                "Error", JOptionPane.ERROR_MESSAGE);
+                        usernameField.setText("");
+                        passwordField.setText("");
+                        usernameField.requestFocus();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(loginFrame, "An error occurred during login",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+
+        SwingUtilities.invokeLater(() -> loadingDialog.setVisible(true));
+        worker.execute();
+    }
+
+    private JDialog createLoadingDialog() {
+        JDialog loadingDialog = new JDialog(loginFrame, "Loading", true);
+        loadingDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        loadingDialog.setSize(200, 150);
+        loadingDialog.setLocationRelativeTo(loginFrame);
+
+        ImageIcon loadingIcon = new ImageIcon(getClass().getResource("/loading.gif"));
+        JLabel loadingLabel = new JLabel("Validating, please wait...", loadingIcon, SwingConstants.CENTER);
+        loadingLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+        loadingLabel.setVerticalTextPosition(SwingConstants.BOTTOM);
+
+        loadingDialog.add(loadingLabel);
+        loadingDialog.setUndecorated(true);
+        return loadingDialog;
     }
 }
