@@ -1,36 +1,36 @@
 package main.java.com.javastock.viewmodel;
 
-import main.java.com.javastock.model.Inventory;
-import main.java.com.javastock.utils.DatabaseConnector;
+import main.java.com.javastock.dao.ProductDAO;
+import main.java.com.javastock.model.Product;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
+import javax.swing.table.DefaultTableModel;
 import java.util.List;
 
 public class InventoryVM {
-    public List<Inventory> fetchInventory() {
-        List<Inventory> inventoryList = new ArrayList<>();
-        String query = "SELECT * FROM inventory";
+    private ProductDAO productDAO;
 
-        try (Connection conn = DatabaseConnector.getConnection("inventorydb");
-             PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
+    public InventoryVM() {
+        this.productDAO = new ProductDAO();
+    }
 
-            while (rs.next()) {
-                Inventory item = new Inventory(
-                        rs.getInt("inventory_id"),
-                        rs.getInt("product_id"),
-                        rs.getInt("warehouse_id"),
-                        rs.getInt("quantity")
-                );
-                inventoryList.add(item);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    public DefaultTableModel getProductTableModel() {
+        List<Product> products = productDAO.getAllProducts();
+        String[] columnNames = {"ID", "Name", "Description", "Unit", "Category", "Supplier", "Reorder Level", "Price", "Active"};
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+
+        for (Product product : products) {
+            model.addRow(new Object[]{
+                    product.getProductId(),
+                    product.getProductName(),
+                    product.getDescription(),
+                    product.getUnitOfMeasure(),
+                    product.getCategoryId(),
+                    product.getSupplierId(),
+                    product.getReorderLevel(),
+                    product.getUnitPrice(),
+                    product.isActive() ? "Yes" : "No"
+            });
         }
-
-        return inventoryList;
+        return model;
     }
 }

@@ -2,12 +2,12 @@ package main.java.com.javastock.view;
 
 import main.java.com.javastock.viewmodel.InventoryVM;
 import main.java.com.javastock.viewmodel.MainVM;
+import main.java.com.javastock.viewmodel.LoginVM;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.HashMap;
 
 public class MainUI {
     private MainVM viewModel;
@@ -15,6 +15,7 @@ public class MainUI {
     private CardLayout cardLayout;
 
     public MainUI(MainVM viewModel) {
+        if (viewModel == null) throw new IllegalArgumentException("MainVM cannot be null");
         this.viewModel = viewModel;
         initializeUI();
     }
@@ -22,188 +23,182 @@ public class MainUI {
     public void initializeUI() {
         JFrame mainFrame = new JFrame("JAVASTOCK");
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainFrame.setSize(1280, 720);
+            mainFrame.setSize(1280, 720);
         mainFrame.setLocationRelativeTo(null);
 
-        // MAIN PANEL
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout(20, 20));
+        JPanel mainPanel = new JPanel(new BorderLayout(20, 20));
         mainPanel.setBackground(Color.LIGHT_GRAY);
 
-        // LEFT MENU PANEL
-        JPanel menuPanel = createMenuPanel();
+        // Menu Panel (Left)
+        JPanel menuPanel = new MenuPanel(viewModel, mainFrame);
         mainPanel.add(menuPanel, BorderLayout.WEST);
 
-        // TOP + CARDLAYOUT CONTAINER PANEL
+        // Center Panel (Search + Card Layout)
         JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.setBackground(Color.LIGHT_GRAY);
+        centerPanel.add(new SearchPanel(), BorderLayout.NORTH);
 
-        // Add the search panel at the top of the centerPanel
-        JPanel searchPanel = createSearchPanel();
-        centerPanel.add(searchPanel, BorderLayout.NORTH);
-
-        // CARDLAYOUT PANEL (for dynamic switching)
         cardLayout = new CardLayout();
         contentPanel = new JPanel(cardLayout);
-        contentPanel.setBackground(Color.LIGHT_GRAY);
 
-        // Add cards to the CardLayout
-        contentPanel.add(createDashboardPanel(), "Dashboard");
-        contentPanel.add(createInventoryPanel(), "Inventory");
-        contentPanel.add(createReportsPanel(), "Reports");
-        contentPanel.add(createSuppliersPanel(), "Suppliers");
-        contentPanel.add(createOrdersPanel(), "Orders");
-        contentPanel.add(createManageStorePanel(), "Manage Store");
-        contentPanel.add(createLogoutPanel(), "Logout");
+        // Add sections dynamically
+        for (String section : viewModel.getSections().keySet()) {
+            JPanel panel = new JPanel();
+            panel.setBackground(viewModel.getSectionColor(section));
+            panel.add(new JLabel(section + " Content"));
+            contentPanel.add(panel, section);
+        }
 
-        // Add the card layout panel to the center panel
         centerPanel.add(contentPanel, BorderLayout.CENTER);
-
-        // Add the center panel to the main panel
         mainPanel.add(centerPanel, BorderLayout.CENTER);
 
         mainFrame.add(mainPanel);
         mainFrame.setVisible(true);
     }
 
+    /** Sidebar Menu */
+    private class MenuPanel extends JPanel {
+        private HashMap<String, JButton> menuButtons = new HashMap<>();
+        private JButton activeButton;
+        private MainVM viewModel;
+        private JFrame mainFrame;
 
-    private JPanel createMenuPanel() {
-        JPanel menuPanel = new JPanel();
-        menuPanel.setBackground(Color.WHITE);
-        menuPanel.setPreferredSize(new Dimension(250, 720));
-        menuPanel.setLayout(new GridLayout(10, 1, 0, 5));
+        public MenuPanel(MainVM viewModel, JFrame mainFrame) {
+            if (viewModel == null) throw new IllegalArgumentException("MainVM cannot be null");
+            this.viewModel = viewModel;
+            this.mainFrame = mainFrame;
 
-        JPanel logoPanel = new JPanel();
-        logoPanel.setBackground(menuPanel.getBackground());
-        menuPanel.add(logoPanel);
+            setBackground(Color.WHITE);
+            setPreferredSize(new Dimension(250, 720));
+            setLayout(new BorderLayout());
 
-        JLabel logoLabel = new JLabel("JAVASTOCK");
-        logoLabel.setFont(new Font("Arial", Font.PLAIN, 30));
-        logoPanel.add(logoLabel);
+            JPanel menuContainer = new JPanel();
+            menuContainer.setLayout(new BoxLayout(menuContainer, BoxLayout.Y_AXIS));
+            menuContainer.setBackground(getBackground());
 
-        JLabel sublogoLabel = new JLabel("Inventory Management System");
-        sublogoLabel.setFont(new Font("Arial", Font.PLAIN, 15));
-        logoPanel.add(sublogoLabel);
+            menuContainer.add(createLogoPanel());
+            menuContainer.add(Box.createVerticalStrut(20));
 
-        menuPanel.add(createMenuButton("Dashboard", "Dashboard"));
-        menuPanel.add(createMenuButton("Inventory", "Inventory"));
-        menuPanel.add(createMenuButton("Reports", "Reports"));
-        menuPanel.add(createMenuButton("Suppliers", "Suppliers"));
-        menuPanel.add(createMenuButton("Orders", "Orders"));
-        menuPanel.add(createMenuButton("Manage Store", "Manage Store"));
-        menuPanel.add(createPlaceholder());
-        menuPanel.add(createPlaceholder());
-        menuPanel.add(createMenuButton("Logout", "Logout"));
-
-        return menuPanel;
-    }
-
-    private JButton createMenuButton(String text, String cardName) {
-        JButton button = createButton(text);
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cardLayout.show(contentPanel, cardName);
+            for (String section : viewModel.getSections().keySet()) {
+                JButton button = createMenuButton(section);
+                menuButtons.put(section, button);
+                menuContainer.add(button);
+                menuContainer.add(Box.createVerticalStrut(5));
             }
-        });
-        return button;
+            // ** Fix Logout Button Height **
+            JButton logoutButton = new JButton("Logout");
+            logoutButton.setBackground(Color.RED);
+            logoutButton.setForeground(Color.WHITE);
+            logoutButton.setFont(new Font("Arial", Font.BOLD, 16));
+
+            // Set button size
+            logoutButton.setPreferredSize(new Dimension(200, 50)); // Fixed height
+            logoutButton.setMinimumSize(new Dimension(200, 50));   // Prevent shrinking
+            logoutButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50)); // Expand width
+
+            logoutButton.addActionListener(e -> handleLogout());
+
+            // Wrap in a panel with BoxLayout for proper height control
+            JPanel logoutPanel = new JPanel();
+            logoutPanel.setLayout(new BoxLayout(logoutPanel, BoxLayout.Y_AXIS));
+            logoutPanel.setBackground(getBackground());
+            logoutPanel.add(Box.createVerticalGlue()); // Push logout button to the bottom
+            logoutPanel.add(logoutButton);
+
+            add(menuContainer, BorderLayout.NORTH);
+            add(logoutPanel, BorderLayout.SOUTH);
+
+            setActiveButton(menuButtons.get(viewModel.getActiveSection()));
+        }
+
+        private void handleLogout() {
+            int choice = JOptionPane.showConfirmDialog(
+                    null,  // Parent component (null centers on screen)
+                    "Are you sure you want to logout?",
+                    "Logout Confirmation",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            if (choice == JOptionPane.YES_OPTION) {
+                mainFrame.dispose();
+                new LoginUI(new LoginVM());
+            }
+        }
+
+
+        private JButton createMenuButton(String section) {
+            JButton button = new JButton(section);
+            button.setAlignmentX(Component.CENTER_ALIGNMENT);
+            button.setFont(new Font("Arial", Font.PLAIN, 15));
+            button.setBackground(new Color(150, 200, 230));
+            button.setPreferredSize(new Dimension(200, 50));
+            button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+
+            button.addActionListener(e -> {
+                if (section.equals("Inventory")) {
+                    contentPanel.add(new InventoryPanel(new InventoryVM()), "Inventory"); // Reload InventoryPanel
+                }
+                viewModel.setActiveSection(section);
+                cardLayout.show(contentPanel, section);
+                setActiveButton(button);
+            });
+
+            return button;
+        }
+
+        private void setActiveButton(JButton selectedButton) {
+            if (selectedButton == null) return;
+
+            for (JButton button : menuButtons.values()) {
+                button.setBackground(new Color(150, 200, 230));
+                button.setForeground(Color.BLACK);
+            }
+
+            selectedButton.setBackground(Color.DARK_GRAY);
+            selectedButton.setForeground(Color.WHITE);
+            activeButton = selectedButton;
+        }
+
+        private JPanel createLogoPanel() {
+            JPanel logoPanel = new JPanel(new GridBagLayout()); // Use GridBagLayout for centering
+            logoPanel.setBackground(getBackground());
+
+            JLabel logoLabel = new JLabel("JAVASTOCK");
+            logoLabel.setFont(new Font("Arial", Font.BOLD, 30));
+            logoLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+            JLabel subLogoLabel = new JLabel("Inventory Management System");
+            subLogoLabel.setFont(new Font("Arial", Font.PLAIN, 15));
+            subLogoLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+            // Add labels with GridBagConstraints to center them
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.anchor = GridBagConstraints.CENTER;
+            logoPanel.add(logoLabel, gbc);
+
+            gbc.gridy = 1;
+            logoPanel.add(subLogoLabel, gbc);
+
+            return logoPanel;
+        }
     }
 
-    private JPanel createSearchPanel() {
-        JPanel searchPanel = new JPanel(new BorderLayout());
-        searchPanel.setBorder(new EmptyBorder(15, 5, 15, 650));
-        searchPanel.setBackground(Color.WHITE);
+    private class SearchPanel extends JPanel {
+        public SearchPanel() {
+            setLayout(new BorderLayout());
+            setBorder(new EmptyBorder(15, 5, 15, 650));
+            setBackground(Color.WHITE);
 
-        JTextField searchField = new JTextField("Search product, supplier, order", 20);
-        searchField.setFont(regularFont());
-        searchField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
-                BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
+            JTextField searchField = new JTextField("Search product, supplier, order", 20);
+            searchField.setFont(new Font("Arial", Font.PLAIN, 15));
 
-        JButton searchButton = new JButton("Search");
-        searchButton.setBackground(new Color(150, 200, 230));
-        searchButton.setForeground(Color.BLACK);
-        searchButton.setFont(regularFont());
-        searchButton.setFocusPainted(true);
-        searchButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+            JButton searchButton = new JButton("Search");
+            searchButton.setBackground(new Color(150, 200, 230));
 
-        searchPanel.add(searchField, BorderLayout.CENTER);
-        searchPanel.add(searchButton, BorderLayout.EAST);
-
-        return searchPanel;
-    }
-
-    // Create individual panels for each card
-    private JPanel createDashboardPanel() {
-        JPanel panel = new JPanel();
-        panel.setBackground(Color.CYAN);
-        panel.add(new JLabel("Welcome to the Dashboard"));
-        return panel;
-    }
-
-    private JPanel createInventoryPanel() {
-        JPanel panel = new JPanel();
-        panel.setBackground(Color.YELLOW);
-        panel.add(new JLabel("Inventory Management Section"));
-        return panel;
-    }
-
-    private JPanel createReportsPanel() {
-        JPanel panel = new JPanel();
-        panel.setBackground(Color.GREEN);
-        panel.add(new JLabel("Reports Section"));
-        return panel;
-    }
-
-    private JPanel createSuppliersPanel() {
-        JPanel panel = new JPanel();
-        panel.setBackground(Color.ORANGE);
-        panel.add(new JLabel("Suppliers Management Section"));
-        return panel;
-    }
-
-    private JPanel createOrdersPanel() {
-        JPanel panel = new JPanel();
-        panel.setBackground(Color.PINK);
-        panel.add(new JLabel("Orders Section"));
-        return panel;
-    }
-
-    private JPanel createManageStorePanel() {
-        JPanel panel = new JPanel();
-        panel.setBackground(Color.MAGENTA);
-        panel.add(new JLabel("Manage Store Section"));
-        return panel;
-    }
-
-    private JPanel createLogoutPanel() {
-        JPanel panel = new JPanel();
-        panel.setBackground(Color.RED);
-        panel.add(new JLabel("You have been logged out."));
-        return panel;
-    }
-
-    // Helper methods
-    public static JButton createButton(String text) {
-        JButton button = new JButton(text);
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setFont(regularFont());
-        button.setBackground(new Color(150, 200, 230));
-        button.setForeground(Color.BLACK);
-        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        return button;
-    }
-
-    public static JPanel createPlaceholder() {
-        JPanel placeholder = new JPanel();
-        placeholder.setBackground(Color.WHITE);
-        placeholder.setAlignmentX(Component.CENTER_ALIGNMENT);
-        placeholder.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        return placeholder;
-    }
-
-    public static Font regularFont() {
-        return new Font("Arial", Font.PLAIN, 15);
+            add(searchField, BorderLayout.CENTER);
+            add(searchButton, BorderLayout.EAST);
+        }
     }
 }

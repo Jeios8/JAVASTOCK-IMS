@@ -1,34 +1,49 @@
 package main.java.com.javastock.viewmodel;
 
-import main.java.com.javastock.viewmodel.DashboardVM;
-import main.java.com.javastock.viewmodel.InventoryVM;
+import java.awt.Color;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class MainVM {
-    private DashboardVM dashboardVM;
-    private InventoryVM inventoryVM;
+    private String activeSection;
+    private final Map<String, String> sections;
+    private final Map<String, Color> sectionColors;
 
     public MainVM() {
-        // Initialize sub-viewmodels
-        this.dashboardVM = new DashboardVM();
-        this.inventoryVM = new InventoryVM();
+        this.activeSection = "Dashboard";
+
+        sections = new LinkedHashMap<>();
+        sections.put("Dashboard", "Dashboard Content Loaded");
+        sections.put("Inventory", "Inventory Content Loaded");
+        sections.put("Reports", "Reports Content Loaded");
+        sections.put("Suppliers", "Suppliers Content Loaded");
+        sections.put("Orders", "Orders Content Loaded");
+        sections.put("Manage Store", "Manage Store Content Loaded");
+
+        sectionColors = new LinkedHashMap<>();
+        sectionColors.put("Dashboard", Color.CYAN);
+        sectionColors.put("Inventory", Color.YELLOW);
+        sectionColors.put("Reports", Color.GREEN);
+        sectionColors.put("Suppliers", Color.ORANGE);
+        sectionColors.put("Orders", Color.PINK);
+        sectionColors.put("Manage Store", Color.MAGENTA);
     }
 
-    public DashboardVM getDashboardVM() {
-        return dashboardVM;
+    public Map<String, String> getSections() {
+        return sections;
     }
 
-    public InventoryVM getInventoryVM() {
-        return inventoryVM;
+    public Color getSectionColor(String section) {
+        return sectionColors.getOrDefault(section, Color.WHITE);
     }
 
-    public String fetchContent(String section) {
-        switch (section) {
-            case "dashboard":
-                return "Dashboard Content Loaded";
-            case "inventory":
-                return "Inventory Content Loaded";
-            default:
-                return "Unknown Section";
+    public String getActiveSection() {
+        return activeSection;
+    }
+
+    public void setActiveSection(String section) {
+        if (sections.containsKey(section)) {
+            this.activeSection = section;
         }
     }
 }
