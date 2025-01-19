@@ -84,11 +84,11 @@ public class LoginUI {
         JPanel inputPanel = new JPanel(new GridLayout(7, 1, 0, 0));
         inputPanel.setBackground(BACKGROUND_COLOR);
 
-        JLabel usernameLabel = createLabel("Username:");
+        JLabel usernameLabel = createLabel("Username");
         usernameField = createTextField();
         usernameField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 
-        JLabel passwordLabel = createLabel("Password:");
+        JLabel passwordLabel = createLabel("Password");
         passwordField = createPasswordField();
         passwordField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 
