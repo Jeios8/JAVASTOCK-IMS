@@ -4,13 +4,16 @@ import main.java.com.javastock.utils.CSVExporter;
 import main.java.com.javastock.viewmodel.InventoryVM;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class InventoryPanel extends JPanel {
     private JTable inventoryTable;
-    private JButton addButton, filterButton, downloadButton;
+    private JButton addButton, downloadButton;
     private JComboBox<String> filterDropdown;
-    private JProgressBar progressBar; // Progress bar for loading indicator
+    private JProgressBar progressBar;
     private InventoryVM viewModel;
 
     public InventoryPanel(InventoryVM viewModel) {
@@ -20,126 +23,116 @@ public class InventoryPanel extends JPanel {
         // Initialize Table
         inventoryTable = new JTable(viewModel.getTableModel());
         JScrollPane scrollPane = new JScrollPane(inventoryTable);
+        inventoryTable.setDefaultRenderer(Object.class, new StockStatusRenderer());
+        inventoryTable.setDefaultEditor(Object.class, null);
 
-        // Buttons
+        inventoryTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int selectedRow = inventoryTable.getSelectedRow();
+                    if (selectedRow != -1) {
+                        Object productIdObj = inventoryTable.getValueAt(selectedRow, 0);
+                        if (productIdObj instanceof Integer) {
+                            int productId = (Integer) productIdObj;
+                            openProductInfoDialog(productId);
+                        }
+                    }
+                }
+            }
+        });
+
+        // Buttons & Filter
         addButton = new JButton("Add Product");
-        filterButton = new JButton("Filters");
         downloadButton = new JButton("Export CSV");
+        filterDropdown = new JComboBox<>(new String[]{"All", "In-stock", "Low stock", "Out of stock"});
 
-        // Filter Dropdown
-        String[] filterOptions = {"All", "In-stock", "Low stock", "Out of stock"};
-        filterDropdown = new JComboBox<>(filterOptions);
-
-        // **Progress Bar**
-        progressBar = new JProgressBar();
-        progressBar.setIndeterminate(true); // Continuous animation
-        progressBar.setStringPainted(true); // Show loading text
-        progressBar.setString("Loading..."); // Default text
-        progressBar.setVisible(false); // Hidden by default
-
-        // Top Panel Layout
-        JPanel topPanel = new JPanel();
-        topPanel.add(addButton);
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         topPanel.add(filterDropdown);
+        topPanel.add(addButton);
         topPanel.add(downloadButton);
+
+        progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true);
+        progressBar.setStringPainted(true);
+        progressBar.setString("Loading...");
+        progressBar.setVisible(false);
 
         add(topPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
-        add(progressBar, BorderLayout.SOUTH); // Add progress bar at the bottom
+        add(progressBar, BorderLayout.SOUTH);
 
-        // **Filter Listener**
-        filterDropdown.addActionListener(e -> {
-            String selected = (String) filterDropdown.getSelectedItem();
-            if (!selected.equals("All")) {
-                loadFilteredInventoryWithProgress(selected);
+        addButton.addActionListener(e -> new AddProductDialog((JFrame) SwingUtilities.getWindowAncestor(this), viewModel));
+        downloadButton.addActionListener(e -> CSVExporter.exportToCSV(inventoryTable));
+        filterDropdown.addActionListener(e -> filterInventory());
+
+        viewModel.setOnDataLoaded(() -> {
+            SwingUtilities.invokeLater(() -> {
+                inventoryTable.setModel(viewModel.getTableModel());
+                progressBar.setVisible(false);
+            });
+        });
+
+        loadInventoryWithProgress();
+    }
+
+    private void openProductInfoDialog(int productId) {
+        JFrame productFrame = new JFrame("Product Details");
+        productFrame.setSize(700, 500);
+        productFrame.setLocationRelativeTo(null);
+        productFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        productFrame.add(new ProductInfoPanel(productId));
+        productFrame.setVisible(true);
+    }
+
+    private void filterInventory() {
+        String selected = (String) filterDropdown.getSelectedItem();
+        progressBar.setVisible(true);
+
+        new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() {
+                if (!"All".equals(selected)) {
+                    viewModel.filterInventory(selected);
+                } else {
+                    viewModel.loadInventoryAsync();
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                SwingUtilities.invokeLater(() -> {
+                    inventoryTable.setModel(viewModel.getTableModel());
+                    progressBar.setVisible(false);  // Hides progress bar after filtering completes
+                });
+            }
+        }.execute();
+    }
+
+
+    void loadInventoryWithProgress() {
+        progressBar.setVisible(true);
+        viewModel.loadInventoryAsync();
+    }
+
+    private static class StockStatusRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            String stockStatus = table.getValueAt(row, table.getColumnModel().getColumnIndex("Availability")).toString();
+
+            if (stockStatus.equalsIgnoreCase("In-stock")) {
+                cell.setBackground(new Color(144, 238, 144));
+            } else if (stockStatus.equalsIgnoreCase("Low stock")) {
+                cell.setBackground(new Color(255, 204, 102));
+            } else if (stockStatus.equalsIgnoreCase("Out of stock")) {
+                cell.setBackground(new Color(255, 102, 102));
             } else {
-                loadInventoryWithProgress();
-            }
-        });
-
-        // **CSV Export**
-        downloadButton.addActionListener(e -> {
-            CSVExporter.exportToCSV(inventoryTable);
-        });
-    }
-
-    public InventoryVM getViewModel() {
-        return viewModel;
-    }
-
-    // **Load inventory with progress indicator**
-    public void loadInventoryWithProgress() {
-        SwingUtilities.invokeLater(() -> {
-            progressBar.setVisible(true); // Show progress bar before task starts
-            progressBar.setString("Loading Inventory...");
-            revalidate();
-            repaint();
-        });
-
-        new SwingWorker<Void, Void>() {
-            long startTime; // Track when loading starts
-
-            @Override
-            protected Void doInBackground() {
-                startTime = System.currentTimeMillis(); // Record start time
-
-                viewModel.loadInventoryAsync();
-
-                // Ensure a minimum display time for the progress bar
-                long elapsedTime = System.currentTimeMillis() - startTime;
-                long remainingTime = 1000 - elapsedTime; // Minimum 1-second display
-                if (remainingTime > 0) {
-                    try {
-                        Thread.sleep(remainingTime);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                return null;
+                cell.setBackground(Color.WHITE);
             }
 
-            @Override
-            protected void done() {
-                SwingUtilities.invokeLater(() -> {
-                    inventoryTable.setModel(viewModel.getTableModel());
-                    progressBar.setVisible(false); // Hide progress bar after loading completes
-                    revalidate();
-                    repaint();
-                });
-            }
-        }.execute();
-    }
-
-    // **Load filtered inventory with progress indicator**
-    public void loadFilteredInventoryWithProgress(String filter) {
-        SwingUtilities.invokeLater(() -> {
-            progressBar.setVisible(true);
-            progressBar.setString("Filtering: " + filter);
-            revalidate();
-            repaint();
-        });
-
-        new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() {
-                try {
-                    Thread.sleep(100); // **Small delay for UI update**
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                viewModel.filterInventory(filter);
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                SwingUtilities.invokeLater(() -> {
-                    inventoryTable.setModel(viewModel.getTableModel());
-                    progressBar.setVisible(false);
-                    revalidate();
-                    repaint();
-                });
-            }
-        }.execute();
+            return cell;
+        }
     }
 }

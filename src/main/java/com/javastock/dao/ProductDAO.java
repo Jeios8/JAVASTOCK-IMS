@@ -14,7 +14,7 @@ public class ProductDAO {
         List<Product> products = new ArrayList<>();
         String query = "SELECT * FROM products"; // Ensure your table name is correct
 
-        try (Connection conn = DatabaseConnector.getConnection("errjava_invdb");
+        try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
@@ -42,7 +42,7 @@ public class ProductDAO {
     // Fetch a single product by ID
     public Product getProductById(int productId) {
         String query = "SELECT * FROM products WHERE product_id = ?";
-        try (Connection conn = DatabaseConnector.getConnection("errjava_invdb");
+        try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, productId);
@@ -71,7 +71,7 @@ public class ProductDAO {
     // Insert a new product into the database
     public boolean insertProduct(Product product) {
         String query = "INSERT INTO products (product_name, description, unit_of_measure, category_id, supplier_id, reorder_level, unit_price, image_path, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DatabaseConnector.getConnection("errjava_invdb");
+        try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, product.getProductName());
@@ -94,7 +94,7 @@ public class ProductDAO {
     // Update an existing product
     public boolean updateProduct(Product product) {
         String query = "UPDATE products SET product_name=?, description=?, unit_of_measure=?, category_id=?, supplier_id=?, reorder_level=?, unit_price=?, image_path=?, is_active=? WHERE product_id=?";
-        try (Connection conn = DatabaseConnector.getConnection("errjava_invdb");
+        try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, product.getProductName());
@@ -118,7 +118,7 @@ public class ProductDAO {
     // Delete a product by ID
     public boolean deleteProduct(int productId) {
         String query = "DELETE FROM products WHERE product_id = ?";
-        try (Connection conn = DatabaseConnector.getConnection("errjava_invdb");
+        try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, productId);

@@ -3,12 +3,14 @@ package main.java.com.javastock.utils;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.Random;
 
 public class DatabaseSeeder {
     private final Connection connection;
 
     public DatabaseSeeder() {
-        this.connection = DatabaseConnector.getConnection("errjava_invdb");
+        this.connection = DatabaseConnector.getConnection();
     }
 
     public void seedDatabase() {
@@ -142,58 +144,35 @@ public class DatabaseSeeder {
     }
 
     private void seedInventory() {
-        String query = "INSERT INTO inventory (product_id, warehouse_id, quantity) VALUES (?, ?, ?)";
+        String query = "INSERT INTO inventory (product_id, warehouse_id, quantity, expiration_date) VALUES (?, ?, ?, ?)";
+
+        Random random = new Random();
+        LocalDate today = LocalDate.now();
+
         Object[][] inventory = {
-                {1, 1, 100},
-                {2, 1, 150},
-                {3, 2, 120},
-                {4, 2, 200},
-                {5, 3, 180},
-                {6, 3, 90},
-                {7, 4, 75},
-                {8, 4, 160},
-                {9, 5, 140},
-                {10, 5, 130},
-                {11, 1, 110},
-                {12, 1, 95},
-                {13, 2, 85},
-                {14, 2, 190},
-                {15, 3, 175},
-                {16, 3, 105},
-                {17, 4, 125},
-                {18, 4, 210},
-                {19, 5, 135},
-                {20, 5, 145},
-                {21, 1, 98},
-                {22, 1, 175},
-                {23, 2, 160},
-                {24, 2, 115},
-                {25, 3, 195},
-                {26, 3, 88},
-                {27, 4, 150},
-                {28, 4, 170},
-                {29, 5, 80},
-                {30, 5, 155},
-                {31, 1, 140},
-                {32, 1, 132},
-                {33, 2, 167},
-                {34, 2, 90},
-                {35, 3, 110},
-                {36, 3, 200},
-                {37, 4, 145},
-                {38, 4, 125},
-                {39, 5, 115},
-                {40, 5, 180},
-                {41, 1, 135},
-                {42, 1, 85},
-                {43, 2, 155},
-                {44, 2, 140},
-                {45, 3, 195},
-                {46, 3, 175},
-                {47, 4, 125},
-                {48, 4, 160}
+                {1, 1, 100}, {2, 1, 150}, {3, 2, 120}, {4, 2, 200}, {5, 3, 180},
+                {6, 3, 90}, {7, 4, 75}, {8, 4, 160}, {9, 5, 140}, {10, 5, 130},
+                {11, 1, 110}, {12, 1, 95}, {13, 2, 85}, {14, 2, 190}, {15, 3, 175},
+                {16, 3, 105}, {17, 4, 125}, {18, 4, 210}, {19, 5, 135}, {20, 5, 145},
+                {21, 1, 98}, {22, 1, 175}, {23, 2, 160}, {24, 2, 115}, {25, 3, 195},
+                {26, 3, 88}, {27, 4, 150}, {28, 4, 170}, {29, 5, 80}, {30, 5, 155},
+                {31, 1, 140}, {32, 1, 132}, {33, 2, 167}, {34, 2, 90}, {35, 3, 110},
+                {36, 3, 200}, {37, 4, 145}, {38, 4, 125}, {39, 5, 115}, {40, 5, 180},
+                {41, 1, 135}, {42, 1, 85}, {43, 2, 155}, {44, 2, 140}, {45, 3, 195},
+                {46, 3, 175}, {47, 4, 125}, {48, 4, 160}
         };
-        executeBatchInsert(query, inventory);
+
+        // Convert inventory array to include expiration date
+        Object[][] updatedInventory = new Object[inventory.length][4];
+
+        for (int i = 0; i < inventory.length; i++) {
+            updatedInventory[i][0] = inventory[i][0]; // product_id
+            updatedInventory[i][1] = inventory[i][1]; // warehouse_id
+            updatedInventory[i][2] = inventory[i][2]; // quantity
+            updatedInventory[i][3] = today.plusMonths(random.nextInt(10) + 3).toString(); // Expiration date (3-12 months ahead)
+        }
+
+        executeBatchInsert(query, updatedInventory);
     }
 
     private void seedCustomers() {
@@ -231,5 +210,10 @@ public class DatabaseSeeder {
         } catch (SQLException e) {
             System.err.println("Error closing the database connection: " + e.getMessage());
         }
+    }
+
+    public static void main(String[] args) {
+        DatabaseSeeder seeder = new DatabaseSeeder();
+        seeder.seedDatabase();
     }
 }

@@ -77,18 +77,21 @@ CREATE INDEX idx_product_name ON products(product_name);
 CREATE INDEX idx_product_category_supplier ON products(category_id, supplier_id);
 
 -- Inventory Table (Added last_updated timestamp and stock status tracking)
+-- Inventory Table (Now includes expiration_date)
 CREATE TABLE inventory (
     inventory_id INT AUTO_INCREMENT PRIMARY KEY,
     product_id INT,
     warehouse_id INT,
     quantity INT NOT NULL,
+    expiration_date DATE,  -- New column for tracking expiration
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    status ENUM('Received', 'Transferred', 'Sold', 'Adjusted') DEFAULT 'Received',
-    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE SET NULL,
+    status ENUM('Received', 'Transferred', 'Sold', 'Adjusted', 'Expired') DEFAULT 'Received',
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
     FOREIGN KEY (warehouse_id) REFERENCES warehouses(warehouse_id) ON DELETE SET NULL
 );
 CREATE INDEX idx_inventory_product ON inventory(product_id);
 CREATE INDEX idx_inventory_warehouse ON inventory(warehouse_id);
+CREATE INDEX idx_inventory_expiration ON inventory(expiration_date);
 
 -- Purchase Orders Table (Added timestamps for tracking order creation and updates)
 CREATE TABLE purchase_orders (

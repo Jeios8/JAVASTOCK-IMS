@@ -1,7 +1,5 @@
-// Updated DatabaseConnector.java
 package main.java.com.javastock.utils;
 
-import main.java.com.javastock.model.User;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
@@ -14,55 +12,27 @@ public class DatabaseConnector {
     private static String password;
 
     static {
-        try {
+        try (FileInputStream fis = new FileInputStream(CONFIG_FILE)) {
             Properties properties = new Properties();
-            properties.load(new FileInputStream(CONFIG_FILE));
+            properties.load(fis);
 
-            dbUrl = properties.getProperty("db.url");
+            dbUrl = properties.getProperty("db.url") + "errjava_invdb"; // Full URL constructed once
             username = properties.getProperty("db.username");
             password = properties.getProperty("db.password");
 
             if (dbUrl == null || username == null || password == null) {
-                throw new IllegalArgumentException("Database properties not properly configured");
+                throw new IllegalStateException("Database properties are missing.");
             }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load database configuration", e);
+            throw new RuntimeException("Failed to load database config: " + CONFIG_FILE, e);
         }
     }
 
-    public static Connection getConnection(String dbName) {
-        if (dbName == null || dbName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Database name cannot be null or empty");
-        }
-
-        String fullDbUrl = dbUrl + dbName;
+    public static Connection getConnection() {
         try {
-            return DriverManager.getConnection(fullDbUrl, username, password);
+            return DriverManager.getConnection(dbUrl, username, password);
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to connect to the database: " + dbName, e);
+            throw new RuntimeException("Database connection error.", e);
         }
-    }
-
-    public static User getUserByUsername(String username) {
-        String query = "SELECT * FROM users WHERE username = ?";
-        try (Connection connection = getConnection("errjava_invdb");
-             PreparedStatement stmt = connection.prepareStatement(query)) {
-
-            stmt.setString(1, username);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                int userid = rs.getInt("user_id");
-                String passwordHash = rs.getString("password_hash");
-                String firstName = rs.getString("first_name");
-                String lastName = rs.getString("last_name");
-                int roleId = rs.getInt("role_id");
-                boolean isActive = rs.getBoolean("is_active");
-                return new User(userid, username, passwordHash, firstName, lastName, roleId, isActive);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to fetch user from database", e);
-        }
-        return null;
     }
 }

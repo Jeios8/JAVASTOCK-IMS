@@ -1,5 +1,6 @@
 package main.java.com.javastock.view;
 
+import main.java.com.javastock.utils.DataPreloader;
 import main.java.com.javastock.viewmodel.LoginVM;
 import main.java.com.javastock.viewmodel.MainVM;
 
@@ -8,6 +9,8 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoginUI {
     private final JFrame loginFrame;
@@ -171,48 +174,48 @@ public class LoginUI {
         if (username.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(loginFrame, "Username and Password cannot be empty.",
                     "Validation Error", JOptionPane.WARNING_MESSAGE);
-            if (username.isEmpty()) {
-                usernameField.requestFocus();
-            } else {
-                passwordField.requestFocus();
-            }
             return;
         }
 
-        // Create and show loading dialog
         JDialog loadingDialog = createLoadingDialog();
+
         SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
             @Override
-            protected Boolean doInBackground() throws InterruptedException {
-                // Simulated delay, replace with actual validation logic
-                Thread.sleep(1000);
+            protected Boolean doInBackground() {
+                SwingUtilities.invokeLater(() -> loadingDialog.setVisible(true));
+
                 return loginVM.validateLogin(username, password);
             }
 
             @Override
             protected void done() {
-                loadingDialog.dispose();
                 try {
-                    if (get()) {
-                        new MainUI(new MainVM()); // Transition to MainUI
-                        loginFrame.dispose();
+                    boolean loginSuccess = get(); // Get the login result
+                    loadingDialog.dispose(); // Close the loading dialog
+
+                    if (loginSuccess) {
+                        SwingUtilities.invokeLater(() -> {
+                            new MainUI(new MainVM()); // Open main dashboard
+                            loginFrame.dispose();
+                        });
                     } else {
-                        JOptionPane.showMessageDialog(loginFrame, "Invalid Username or Password",
-                                "Error", JOptionPane.ERROR_MESSAGE);
-                        usernameField.setText("");
-                        passwordField.setText("");
-                        usernameField.requestFocus();
+                        SwingUtilities.invokeLater(() -> {
+                            JOptionPane.showMessageDialog(loginFrame, "Invalid Username or Password",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
+                            usernameField.setText("");
+                            passwordField.setText("");
+                        });
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    loadingDialog.dispose();
                     JOptionPane.showMessageDialog(loginFrame, "An error occurred during login",
                             "Error", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
                 }
             }
         };
 
-        SwingUtilities.invokeLater(() -> loadingDialog.setVisible(true));
-        worker.execute();
+        worker.execute(); // Start login process **after UI remains responsive**
     }
 
     private JDialog createLoadingDialog() {
@@ -222,7 +225,7 @@ public class LoginUI {
         loadingDialog.setLocationRelativeTo(loginFrame);
 
         ImageIcon loadingIcon = new ImageIcon(getClass().getResource("/loading.gif"));
-        JLabel loadingLabel = new JLabel("Validating, please wait...", loadingIcon, SwingConstants.CENTER);
+        JLabel loadingLabel = new JLabel("Loading, please wait...", loadingIcon, SwingConstants.CENTER);
         loadingLabel.setHorizontalTextPosition(SwingConstants.CENTER);
         loadingLabel.setVerticalTextPosition(SwingConstants.BOTTOM);
 
