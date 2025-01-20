@@ -57,6 +57,7 @@ public class MainUI {
 
     /** Sidebar Menu */
     private class MenuPanel extends JPanel {
+        private InventoryPanel inventoryPanel = new InventoryPanel(new InventoryVM()); // Create once
         private HashMap<String, JButton> menuButtons = new HashMap<>();
         private JButton activeButton;
         private MainVM viewModel;
@@ -134,10 +135,23 @@ public class MainUI {
             button.setPreferredSize(new Dimension(200, 50));
             button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
 
+//            button.addActionListener(e -> {
+//                if (section.equals("Inventory")) {
+//                    contentPanel.add(new InventoryPanel(new InventoryVM()), "Inventory"); // Reload InventoryPanel
+//                }
+//                viewModel.setActiveSection(section);
+//                cardLayout.show(contentPanel, section);
+//                setActiveButton(button);
+//            });
+
             button.addActionListener(e -> {
                 if (section.equals("Inventory")) {
-                    contentPanel.add(new InventoryPanel(new InventoryVM()), "Inventory"); // Reload InventoryPanel
+                    if (!isInventoryAdded()) {
+                        contentPanel.add(inventoryPanel, "Inventory"); // Add it only once
+                    }
+                    inventoryPanel.loadInventoryWithProgress(); // **Show progress bar while loading**
                 }
+
                 viewModel.setActiveSection(section);
                 cardLayout.show(contentPanel, section);
                 setActiveButton(button);
@@ -200,5 +214,15 @@ public class MainUI {
             add(searchField, BorderLayout.CENTER);
             add(searchButton, BorderLayout.EAST);
         }
+    }
+
+    // Helper method to check if InventoryPanel is already added
+    private boolean isInventoryAdded() {
+        for (Component comp : contentPanel.getComponents()) {
+            if (comp instanceof InventoryPanel) {
+                return true;
+            }
+        }
+        return false;
     }
 }

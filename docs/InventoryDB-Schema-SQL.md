@@ -1,4 +1,5 @@
-```sql-- Database
+```sql
+-- Database
 CREATE DATABASE IF NOT EXISTS InventoryDB;
 USE InventoryDB;
 
