@@ -23,8 +23,12 @@ public class ProductInfoPanel extends JPanel {
         int stockOnHand = productVM.getStockOnHand();
         int onTheWayStock = productVM.getOnTheWayStock();
 
-        // Top Section - Tabs & Buttons
-        JPanel topPanel = new JPanel(new BorderLayout());
+        // Buttons Panel (Anchored to the Top Right)
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton editButton = new JButton("Edit");
+        JButton downloadButton = new JButton("Download");
+        buttonPanel.add(editButton);
+        buttonPanel.add(downloadButton);
 
         // Tabs
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -33,17 +37,12 @@ public class ProductInfoPanel extends JPanel {
         tabbedPane.addTab("Adjustments", new JPanel()); // Placeholder
         tabbedPane.addTab("History", new JPanel()); // Placeholder
 
-        // Buttons Panel
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton editButton = new JButton("Edit");
-        JButton downloadButton = new JButton("Download");
-        buttonPanel.add(editButton);
-        buttonPanel.add(downloadButton);
+        // Main Panel (Contains Tabs & Buttons)
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(buttonPanel, BorderLayout.NORTH); // 🔹 Add Buttons Above Tabs
+        mainPanel.add(tabbedPane, BorderLayout.CENTER);
 
-        topPanel.add(tabbedPane, BorderLayout.CENTER);
-        topPanel.add(buttonPanel, BorderLayout.EAST);
-
-        add(topPanel, BorderLayout.NORTH);
+        add(mainPanel, BorderLayout.NORTH);
         add(createStockLocationsPanel(), BorderLayout.CENTER);
     }
 

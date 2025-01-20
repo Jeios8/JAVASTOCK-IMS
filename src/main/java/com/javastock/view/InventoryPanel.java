@@ -78,7 +78,7 @@ public class InventoryPanel extends JPanel {
 
     private void openProductInfoDialog(int productId) {
         JFrame productFrame = new JFrame("Product Details");
-        productFrame.setSize(700, 500);
+        productFrame.setSize(510, 500);
         productFrame.setLocationRelativeTo(null);
         productFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         productFrame.add(new ProductInfoPanel(productId));
