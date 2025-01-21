@@ -19,9 +19,9 @@ public class LoginUI {
     private final LoginVM loginVM;
 
     // Shared UI constants
-    private static final Font TITLE_FONT = new Font("Arial", Font.PLAIN, 40);
-    private static final Font SUBTITLE_FONT = new Font("Arial", Font.PLAIN, 20);
-    private static final Font LABEL_FONT = new Font("Arial", Font.PLAIN, 14);
+    private static final Font TITLE_FONT = new Font("Helvetica", Font.PLAIN, 40);
+    private static final Font SUBTITLE_FONT = new Font("Helvetica", Font.PLAIN, 20);
+    private static final Font LABEL_FONT = new Font("Helvetica", Font.PLAIN, 14);
     private static final Color BACKGROUND_COLOR = Color.WHITE;
     private static final Color LOGIN_BUTTON_COLOR = new Color(30, 100, 255);
     private static final Color EXIT_BUTTON_COLOR = new Color(200, 50, 30);
@@ -128,7 +128,7 @@ public class LoginUI {
         bottomPanel.setBackground(BACKGROUND_COLOR);
 
         JLabel bottomLabel = new JLabel("Powered by ERR Software Solutions");
-        bottomLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        bottomLabel.setFont(new Font("Helvetica", Font.PLAIN, 12));
         bottomLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         bottomPanel.add(Box.createVerticalStrut(50));
 
@@ -252,7 +252,7 @@ class Button extends JButton { // Rounded Buttons
         setFocusPainted(false);
         setOpaque(false);
         setForeground(Color.WHITE);
-        setFont(new Font("Arial", Font.BOLD, 14));
+        setFont(new Font("Helvetica", Font.BOLD, 14));
         setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         addMouseListener(new java.awt.event.MouseAdapter() {
