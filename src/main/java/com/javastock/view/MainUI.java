@@ -39,8 +39,11 @@ public class MainUI {
     public void initializeUI() {
         JFrame mainFrame = new JFrame("JAVASTOCK");
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            mainFrame.setSize(1280, 720);
+        mainFrame.setUndecorated(false);
+        mainFrame.setSize(1280, 720);
         mainFrame.setLocationRelativeTo(null);
+        //Start in Fullscreen
+        //mainFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         JPanel mainPanel = new JPanel(new BorderLayout(10, 20));
         mainPanel.setBackground(Color.LIGHT_GRAY);
