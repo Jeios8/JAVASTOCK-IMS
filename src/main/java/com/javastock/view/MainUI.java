@@ -9,10 +9,25 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.HashMap;
 
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
+
 public class MainUI {
     private MainVM viewModel;
     private JPanel contentPanel;
     private CardLayout cardLayout;
+    String[] sourceIcons = {
+            "src\\main\\resources\\icons\\Icon_Dashboard.png",
+            "src\\main\\resources\\icons\\Icon_Inventory.png",
+            "src\\main\\resources\\icons\\Icon_Reports.png",
+            "src\\main\\resources\\icons\\Icon_Suppliers.png",
+            "src\\main\\resources\\icons\\Icon_Orders.png",
+            "src\\main\\resources\\icons\\Icon_Store.png",
+            "src\\main\\resources\\icons\\Icon_Logout.png"
+    };
+    ImageIcon[] menuIcons = resizeIcons(sourceIcons, 20,20);//Resized Icons to 25x25 pixels
 
     public MainUI(MainVM viewModel) {
         if (viewModel == null) throw new IllegalArgumentException("MainVM cannot be null");
@@ -80,16 +95,25 @@ public class MainUI {
             menuContainer.add(Box.createVerticalStrut(20));
 
             for (String section : viewModel.getSections().keySet()) {
+                ImageIcon icon = getIconForSection(section);
                 JButton button = createMenuButton(section);
+                button.setIcon(icon);
+                button.setIconTextGap(20);
                 menuButtons.put(section, button);
                 menuContainer.add(button);
                 menuContainer.add(Box.createVerticalStrut(5));
             }
             // ** Fix Logout Button Height **
             JButton logoutButton = new JButton("Logout");
-            logoutButton.setBackground(Color.RED);
-            logoutButton.setForeground(Color.WHITE);
-            logoutButton.setFont(new Font("Arial", Font.BOLD, 16));
+
+            logoutButton.setIcon(new ImageIcon(menuIcons[6].getImage()));
+            logoutButton.setIconTextGap(20);
+            logoutButton.setBackground(Color.WHITE);
+            logoutButton.setForeground(Color.DARK_GRAY);
+            logoutButton.setFocusPainted(false);
+            logoutButton.setBorderPainted(false);
+            logoutButton.setFont(new Font("Helvetica", Font.PLAIN, 17));
+            logoutButton.setHorizontalAlignment(SwingConstants.LEFT);
 
             // Set button size
             logoutButton.setPreferredSize(new Dimension(200, 50)); // Fixed height
@@ -130,8 +154,11 @@ public class MainUI {
         private JButton createMenuButton(String section) {
             JButton button = new JButton(section);
             button.setAlignmentX(Component.CENTER_ALIGNMENT);
-            button.setFont(new Font("Arial", Font.PLAIN, 15));
+            button.setFont(new Font("Helvetica", Font.PLAIN, 15));
+            button.setHorizontalAlignment(SwingConstants.LEFT);
             button.setBackground(new Color(150, 200, 230));
+            button.setFocusPainted(false);
+            button.setBorderPainted(false);
             button.setPreferredSize(new Dimension(200, 50));
             button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
 
@@ -164,12 +191,13 @@ public class MainUI {
             if (selectedButton == null) return;
 
             for (JButton button : menuButtons.values()) {
-                button.setBackground(new Color(150, 200, 230));
-                button.setForeground(Color.BLACK);
+                button.setBackground(Color.WHITE);
+                button.setFont(new Font("Helvetica", Font.PLAIN, 16));
+                button.setForeground(Color.DARK_GRAY);
             }
 
-            selectedButton.setBackground(Color.DARK_GRAY);
-            selectedButton.setForeground(Color.WHITE);
+            selectedButton.setBackground(Color.WHITE);
+            selectedButton.setForeground(new Color(0, 0, 150));
             activeButton = selectedButton;
         }
 
@@ -178,11 +206,11 @@ public class MainUI {
             logoPanel.setBackground(getBackground());
 
             JLabel logoLabel = new JLabel("JAVASTOCK");
-            logoLabel.setFont(new Font("Arial", Font.BOLD, 30));
+            logoLabel.setFont(new Font("Helvetica", Font.PLAIN, 30));
             logoLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
             JLabel subLogoLabel = new JLabel("Inventory Management System");
-            subLogoLabel.setFont(new Font("Arial", Font.PLAIN, 15));
+            subLogoLabel.setFont(new Font("Helvetica", Font.PLAIN, 15));
             subLogoLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
             // Add labels with GridBagConstraints to center them
@@ -206,16 +234,45 @@ public class MainUI {
             setBackground(Color.WHITE);
 
             JTextField searchField = new JTextField("Search product, supplier, order", 20);
-            searchField.setFont(new Font("Arial", Font.PLAIN, 15));
+            searchField.setFont(new Font("Helvetica", Font.PLAIN, 15));
 
             JButton searchButton = new JButton("Search");
             searchButton.setBackground(new Color(150, 200, 230));
+            searchButton.setFocusPainted(false);
 
             add(searchField, BorderLayout.CENTER);
             add(searchButton, BorderLayout.EAST);
         }
+
+    }
+    public ImageIcon getIconForSection(String section) { //Place Icons on Menu Buttons
+        return switch (section) {
+            case "Dashboard" -> new ImageIcon(menuIcons[0].getImage());
+            case "Inventory" -> new ImageIcon(menuIcons[1].getImage());
+            case "Reports" -> new ImageIcon(menuIcons[2].getImage());
+            case "Suppliers" -> new ImageIcon(menuIcons[3].getImage());
+            case "Orders" -> new ImageIcon(menuIcons[4].getImage());
+            case "Manage Store" -> new ImageIcon(menuIcons[5].getImage());
+            default -> null;
+        };
     }
 
+    //Method to resize Icons
+    public static ImageIcon[] resizeIcons(String[] sourceIcons, int targetWidth, int targetHeight) {
+        ImageIcon[] menuIcons = new ImageIcon[sourceIcons.length];
+
+        for (int i = 0; i < sourceIcons.length; i++) {
+            try {
+                BufferedImage originalImage = ImageIO.read(new File(sourceIcons[i]));
+                Image resizedImage = originalImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
+                menuIcons[i] = new ImageIcon(resizedImage);
+            } catch (IOException e) {
+                System.out.println("Error loading image: " + sourceIcons[i]);
+            }
+        }
+
+        return menuIcons;
+    }
     // Helper method to check if InventoryPanel is already added
     private boolean isInventoryAdded() {
         for (Component comp : contentPanel.getComponents()) {
