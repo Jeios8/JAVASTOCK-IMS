@@ -1,6 +1,5 @@
 package main.java.com.javastock.viewmodel;
 
-import main.java.com.javastock.dao.WarehouseDAO;
 import main.java.com.javastock.model.Warehouse;
 
 import javax.swing.table.DefaultTableModel;

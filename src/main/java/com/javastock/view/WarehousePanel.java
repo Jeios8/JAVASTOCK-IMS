@@ -26,6 +26,5 @@ public class WarehousePanel extends JPanel {
     }
 
     private void loadWarehouseData() {
-        warehouseTable.setModel(warehouseVM.getWarehouseTableModel());
     }
 }
