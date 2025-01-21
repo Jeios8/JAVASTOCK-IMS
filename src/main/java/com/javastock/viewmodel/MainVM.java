@@ -1,5 +1,6 @@
 package main.java.com.javastock.viewmodel;
 
+import javax.swing.*;
 import java.awt.Color;
 import java.util.LinkedHashMap;
 import java.util.Map;

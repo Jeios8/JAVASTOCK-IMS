@@ -9,10 +9,24 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.HashMap;
 
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
+
 public class MainUI {
     private MainVM viewModel;
     private JPanel contentPanel;
     private CardLayout cardLayout;
+    String[] sourceIcons = {
+            "src\\main\\resources\\icons\\Icon_Dashboard.png",
+            "src\\main\\resources\\icons\\Icon_Inventory.png",
+            "src\\main\\resources\\icons\\Icon_Reports.png",
+            "src\\main\\resources\\icons\\Icon_Suppliers.png",
+            "src\\main\\resources\\icons\\Icon_Orders.png",
+            "src\\main\\resources\\icons\\Icon_Store.png"
+    };
+    ImageIcon[] menuIcons = resizeIcons(sourceIcons, 20,20);//Resized Icons
 
     public MainUI(MainVM viewModel) {
         if (viewModel == null) throw new IllegalArgumentException("MainVM cannot be null");
@@ -80,13 +94,22 @@ public class MainUI {
             menuContainer.add(Box.createVerticalStrut(20));
 
             for (String section : viewModel.getSections().keySet()) {
+                ImageIcon icon = getIconForSection(section);
                 JButton button = createMenuButton(section);
+                button.setIcon(icon);
                 menuButtons.put(section, button);
                 menuContainer.add(button);
                 menuContainer.add(Box.createVerticalStrut(5));
             }
             // ** Fix Logout Button Height **
             JButton logoutButton = new JButton("Logout");
+            ImageIcon dashboardIcon = new ImageIcon("src\\main\\resources\\icons\\Icon_Logout.png");
+            Image resizedImage = dashboardIcon.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
+
+            // Create a new ImageIcon with the resized image
+            ImageIcon resizedIcon = new ImageIcon(resizedImage);
+            logoutButton.setIcon(resizedIcon);
+
             logoutButton.setBackground(Color.RED);
             logoutButton.setForeground(Color.WHITE);
             logoutButton.setFont(new Font("Arial", Font.BOLD, 16));
@@ -132,6 +155,7 @@ public class MainUI {
             button.setAlignmentX(Component.CENTER_ALIGNMENT);
             button.setFont(new Font("Arial", Font.PLAIN, 15));
             button.setBackground(new Color(150, 200, 230));
+            button.setFocusPainted(false);
             button.setPreferredSize(new Dimension(200, 50));
             button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
 
@@ -210,12 +234,45 @@ public class MainUI {
 
             JButton searchButton = new JButton("Search");
             searchButton.setBackground(new Color(150, 200, 230));
+            searchButton.setFocusPainted(false);
 
             add(searchField, BorderLayout.CENTER);
             add(searchButton, BorderLayout.EAST);
         }
+
+    }
+    public ImageIcon getIconForSection(String section) {
+        return switch (section) {
+            case "Dashboard" -> new ImageIcon(menuIcons[0].getImage());
+            case "Inventory" -> new ImageIcon(menuIcons[1].getImage());
+            case "Reports" -> new ImageIcon(menuIcons[2].getImage());
+            case "Suppliers" -> new ImageIcon(menuIcons[3].getImage());
+            case "Orders" -> new ImageIcon(menuIcons[4].getImage());
+            case "Manage Store" -> new ImageIcon(menuIcons[5].getImage());
+            default -> null;
+        };
     }
 
+    public static ImageIcon[] resizeIcons(String[] sourceIcons, int targetWidth, int targetHeight) {
+        ImageIcon[] menuIcons = new ImageIcon[sourceIcons.length];
+
+        for (int i = 0; i < sourceIcons.length; i++) {
+            try {
+                // Load the image from file
+                BufferedImage originalImage = ImageIO.read(new File(sourceIcons[i]));
+
+                // Resize the image
+                Image resizedImage = originalImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
+
+                // Create a new ImageIcon from the resized image
+                menuIcons[i] = new ImageIcon(resizedImage);
+            } catch (IOException e) {
+                System.out.println("Error loading image: " + sourceIcons[i]);
+            }
+        }
+
+        return menuIcons;
+    }
     // Helper method to check if InventoryPanel is already added
     private boolean isInventoryAdded() {
         for (Component comp : contentPanel.getComponents()) {
