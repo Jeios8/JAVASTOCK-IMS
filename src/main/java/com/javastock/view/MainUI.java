@@ -3,6 +3,7 @@ package main.java.com.javastock.view;
 import main.java.com.javastock.viewmodel.InventoryVM;
 import main.java.com.javastock.viewmodel.MainVM;
 import main.java.com.javastock.viewmodel.LoginVM;
+import main.java.com.javastock.viewmodel.WarehouseVM;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -41,7 +42,7 @@ public class MainUI {
             mainFrame.setSize(1280, 720);
         mainFrame.setLocationRelativeTo(null);
 
-        JPanel mainPanel = new JPanel(new BorderLayout(20, 20));
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 20));
         mainPanel.setBackground(Color.LIGHT_GRAY);
 
         // Menu Panel (Left)
@@ -73,6 +74,7 @@ public class MainUI {
     /** Sidebar Menu */
     private class MenuPanel extends JPanel {
         private InventoryPanel inventoryPanel = new InventoryPanel(new InventoryVM()); // Create once
+        private WarehousePanel warehousePanel = new WarehousePanel(new WarehouseVM());
         private HashMap<String, JButton> menuButtons = new HashMap<>();
         private JButton activeButton;
         private MainVM viewModel;
@@ -177,6 +179,10 @@ public class MainUI {
                         contentPanel.add(inventoryPanel, "Inventory"); // Add it only once
                     }
                     inventoryPanel.loadInventoryWithProgress(); // **Show progress bar while loading**
+                }
+
+                if (section.equals("Manage Store")) {
+                        contentPanel.add(warehousePanel, "Manage Store"); // Add it only once
                 }
 
                 viewModel.setActiveSection(section);
