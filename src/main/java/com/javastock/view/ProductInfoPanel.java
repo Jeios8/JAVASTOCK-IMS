@@ -12,8 +12,8 @@ public class ProductInfoPanel extends JPanel {
     private final int productId;
 
     // Editable fields
-    private JTextField productNameField, buyingPriceField, categoryField, supplierField, quantityField, thresholdField;
-    private JLabel productIdLabel, stockOnHandLabel, onTheWayStockLabel;
+    private JTextField productNameField, buyingPriceField, categoryField, supplierField, quantityField, thresholdField, itemStatusField;
+    private JLabel productIdLabel;
     private JButton editSaveButton;
     private boolean isEditing = false; // Toggle state for edit mode
 
@@ -66,8 +66,7 @@ public class ProductInfoPanel extends JPanel {
         supplierField = createEditableTextField("Loading...");
         quantityField = createEditableTextField("Loading...");
         thresholdField = createEditableTextField("Loading...");
-        stockOnHandLabel = new JLabel("Loading...");
-        onTheWayStockLabel = new JLabel("Loading...");
+        itemStatusField = createEditableTextField("Loading...");
     }
 
     private JPanel createOverviewPanel() {
@@ -124,27 +123,31 @@ public class ProductInfoPanel extends JPanel {
         leftGbc.gridx = 1;
         leftPanel.add(quantityField, leftGbc);
 
-        // ✅ Stock Summary (Moved from Right Panel to Left Panel)
-        leftGbc.gridx = 0;
-        leftGbc.gridy++;
-        leftPanel.add(new JLabel("Stock On Hand:"), leftGbc);
-        leftGbc.gridx = 1;
-        stockOnHandLabel = new JLabel("Loading...");
-        leftPanel.add(stockOnHandLabel, leftGbc);
+//        leftGbc.gridx = 0;
+//        leftGbc.gridy++;
+//        leftPanel.add(new JLabel("Stock On Hand:"), leftGbc);
+//        leftGbc.gridx = 1;
+//        stockOnHandLabel = new JLabel("Loading...");
+//        leftPanel.add(stockOnHandLabel, leftGbc);
+//
+//        leftGbc.gridx = 0;
+//        leftGbc.gridy++;
+//        leftPanel.add(new JLabel("On the Way:"), leftGbc);
+//        leftGbc.gridx = 1;
+//        onTheWayStockLabel = new JLabel("Loading...");
+//        leftPanel.add(onTheWayStockLabel, leftGbc);
 
         leftGbc.gridx = 0;
         leftGbc.gridy++;
-        leftPanel.add(new JLabel("On the Way:"), leftGbc);
+        leftPanel.add(new JLabel("Re-order Level:"), leftGbc);
         leftGbc.gridx = 1;
-        onTheWayStockLabel = new JLabel("Loading...");
-        leftPanel.add(onTheWayStockLabel, leftGbc);
-
-        leftGbc.gridx = 0;
-        leftGbc.gridy++;
-        leftPanel.add(new JLabel("Threshold:"), leftGbc);
-        leftGbc.gridx = 1;
-        thresholdField = createEditableTextField("Loading...");
         leftPanel.add(thresholdField, leftGbc);
+
+        leftGbc.gridx = 0;
+        leftGbc.gridy++;
+        leftPanel.add(new JLabel("Status:"), leftGbc);
+        leftGbc.gridx = 1;
+        leftPanel.add(itemStatusField, leftGbc);
 
         // ✅ Right Panel - Product Image Only
         JPanel rightPanel = new JPanel(new BorderLayout());
@@ -248,7 +251,8 @@ public class ProductInfoPanel extends JPanel {
         new SwingWorker<Void, Void>() {
             private String productName, category, supplier;
             private double buyingPrice;
-            private int quantity, threshold, stockOnHand, onTheWayStock;
+            private int quantity, threshold;
+            private boolean itemStatus;
 
             @Override
             protected Void doInBackground() {
@@ -258,8 +262,7 @@ public class ProductInfoPanel extends JPanel {
                 buyingPrice = productVM.getBuyingPrice();
                 quantity = productVM.getQuantity();
                 threshold = productVM.getThreshold();
-                stockOnHand = productVM.getStockOnHand();
-                onTheWayStock = productVM.getOnTheWayStock();
+                itemStatus = productVM.getItemStatus();
                 return null;
             }
 
@@ -273,8 +276,7 @@ public class ProductInfoPanel extends JPanel {
                     supplierField.setText(supplier);
                     quantityField.setText("" + quantity);
                     thresholdField.setText(String.valueOf(threshold));
-                    stockOnHandLabel.setText(String.valueOf(stockOnHand));
-                    onTheWayStockLabel.setText(String.valueOf(onTheWayStock));
+                    itemStatusField.setText(String.valueOf(itemStatus));
                 });
             }
         }.execute();

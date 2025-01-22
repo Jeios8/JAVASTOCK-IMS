@@ -65,9 +65,9 @@ public class InventoryVM {
 
                 rowData[0] = rs.getInt("product_id");
                 rowData[1] = rs.getString("product_name");
-                rowData[2] = "₱" + rs.getDouble("unit_price");
-                rowData[3] = rs.getInt("quantity") + " Units";
-                rowData[4] = rs.getInt("reorder_level") + " Units";
+                rowData[2] = "₱ " + rs.getDouble("unit_price");
+                rowData[3] = rs.getInt("quantity");
+                rowData[4] = rs.getInt("reorder_level");
                 rowData[5] = rs.getString("availability");
 
                 if (rowData.length == tableModel.getColumnCount()) {
@@ -80,8 +80,6 @@ public class InventoryVM {
             e.printStackTrace();
         }
     }
-
-
 
     public boolean validateAndAddProduct(String name, String price, String qty, String threshold,
                                          String category, String supplier, String warehouse) {

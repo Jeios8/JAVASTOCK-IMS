@@ -12,6 +12,10 @@ public class ProductVM {
         this.productId = productId;
     }
 
+    public boolean getItemStatus() {
+        return getBooleanValue("SELECT is_active FROM products WHERE product_id = ?", productId);
+    }
+
     public int getProductId() {
         return productId;
     }
@@ -85,6 +89,24 @@ public class ProductVM {
         }
         return 0;
     }
+
+    private boolean getBooleanValue(String query, int productId) {
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, productId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    // Use rs.getBoolean(1) if the boolean is in the first column of your SELECT
+                    return rs.getBoolean(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 
     public int getThreshold() {
         return getIntValue("SELECT reorder_level FROM products WHERE product_id = ?", productId);
