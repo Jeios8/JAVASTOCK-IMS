@@ -11,8 +11,6 @@ public class MainVM {
     private final Map<String, Color> sectionColors;
 
     public MainVM() {
-        this.activeSection = "Dashboard";
-
         sections = new LinkedHashMap<>();
         sections.put("Dashboard", "Dashboard Content Loaded");
         sections.put("Inventory", "Inventory Content Loaded");

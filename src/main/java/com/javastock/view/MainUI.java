@@ -44,7 +44,6 @@ public class MainUI {
         OrdersUI ordersUI = new OrdersUI(new OrdersVM());
         WarehousePanel warehousePanel = new WarehousePanel(new WarehouseVM());
 
-
         // Map keys match the ViewModel sections:
         dynamicPanels.put("Dashboard", dashboardUI);
         dynamicPanels.put("Inventory", inventoryPanel);
@@ -80,11 +79,16 @@ public class MainUI {
         contentPanel = new JPanel(cardLayout);
 
         // 3. Add sections from the ViewModel (default content panels)
+        // Ensure "Dashboard" is added first
+        contentPanel.add("Dashboard", new DashboardUI(new DashboardVM()));
+
         for (String section : viewModel.getSections().keySet()) {
-            JPanel panel = new JPanel();
-            panel.setBackground(viewModel.getSectionColor(section));
-            panel.add(new JLabel(section + " Content"));
-            contentPanel.add(panel, section);
+            if (!section.equals("Dashboard")) {
+                JPanel panel = new JPanel();
+                panel.setBackground(viewModel.getSectionColor(section));
+                panel.add(new JLabel(section + " Content"));
+                contentPanel.add(panel, section);
+            }
         }
 
         centerPanel.add(contentPanel, BorderLayout.CENTER);
@@ -211,6 +215,9 @@ public class MainUI {
 
             // Highlight the active section’s button
             setActiveButton(menuButtons.get(viewModel.getActiveSection()));
+
+            // Set Dashboard as active button when UI loads
+            setActiveButton(menuButtons.get("Dashboard"));
         }
 
         private JButton createMenuButton(String section) {
