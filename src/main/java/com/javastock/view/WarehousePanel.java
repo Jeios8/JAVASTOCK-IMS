@@ -7,7 +7,7 @@ import java.awt.*;
 
 public class WarehousePanel extends JPanel {
     private static final Font LABEL_FONT = new Font("Helvetica", Font.PLAIN, 13);
-    private WarehouseVM warehouseVM;
+    private WarehouseVM viewModel;
     private static final Font TITLE_FONT = new Font("Helvetica", Font.BOLD, 16);
     private static final Font NAME_FONT = new Font("Helvetica", Font.BOLD, 13);
     String[] warehouseName = {
@@ -18,7 +18,7 @@ public class WarehousePanel extends JPanel {
     };
 
     public WarehousePanel(WarehouseVM warehouseVM) {
-        this.warehouseVM = warehouseVM;
+        this.viewModel = warehouseVM;
         setLayout(new BorderLayout());
 
         //Add components to main Panel
@@ -121,6 +121,8 @@ public class WarehousePanel extends JPanel {
         addButton.setForeground(Color.WHITE);
         addButton.setFocusPainted(false);
         addButton.setBorderPainted(false);
+
+        addButton.addActionListener(e -> new AddStoreDialog((JFrame) SwingUtilities.getWindowAncestor(this), viewModel));
 
         return addButton;
     }

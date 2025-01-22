@@ -1,9 +1,6 @@
 package main.java.com.javastock.view;
 
-import main.java.com.javastock.viewmodel.InventoryVM;
-import main.java.com.javastock.viewmodel.LoginVM;
-import main.java.com.javastock.viewmodel.MainVM;
-import main.java.com.javastock.viewmodel.WarehouseVM;
+import main.java.com.javastock.viewmodel.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -40,10 +37,13 @@ public class MainUI {
         this.viewModel = viewModel;
 
         // 1. Initialize and store your custom panels in the map
+        DashboardUI dashboardUI = new DashboardUI(new DashboardVM());
         InventoryPanel inventoryPanel = new InventoryPanel(new InventoryVM());
         WarehousePanel warehousePanel = new WarehousePanel(new WarehouseVM());
 
+
         // Map keys match the ViewModel sections:
+        dynamicPanels.put("Dashboard", dashboardUI);
         dynamicPanels.put("Inventory", inventoryPanel);
         dynamicPanels.put("Manage Store", warehousePanel);
 
