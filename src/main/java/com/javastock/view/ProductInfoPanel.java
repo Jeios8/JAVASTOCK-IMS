@@ -25,6 +25,9 @@ public class ProductInfoPanel extends JPanel {
         setLayout(new BorderLayout(20, 20));
         setBorder(new EmptyBorder(20, 20, 20, 20)); // Padding
 
+        // ✅ Initialize Fields
+        initializeFields();
+
         // ✅ Buttons Panel (Anchored to the Top Right)
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         editSaveButton = new JButton("Edit");
@@ -54,112 +57,146 @@ public class ProductInfoPanel extends JPanel {
         loadProductDataAsync();
     }
 
-    private JPanel createOverviewPanel() {
-        JPanel overviewPanel = new JPanel(new GridBagLayout()); // ✅ Use GridBagLayout for better alignment
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); // ✅ Spacing between elements
-        gbc.fill = GridBagConstraints.BOTH;
+    // ✅ Initialize UI Fields
+    private void initializeFields() {
+        productIdLabel = new JLabel("Loading...");
+        productNameField = createEditableTextField("Loading...");
+        buyingPriceField = createEditableTextField("Loading...");
+        categoryField = createEditableTextField("Loading...");
+        supplierField = createEditableTextField("Loading...");
+        quantityField = createEditableTextField("Loading...");
+        thresholdField = createEditableTextField("Loading...");
+        stockOnHandLabel = new JLabel("Loading...");
+        onTheWayStockLabel = new JLabel("Loading...");
+    }
 
-        // ✅ Left Panel - Product & Supplier Details
+    private JPanel createOverviewPanel() {
+        JPanel overviewPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+
+        // ✅ Left Panel - Product & Stock Summary Details
         JPanel leftPanel = new JPanel(new GridBagLayout());
         leftPanel.setBorder(BorderFactory.createTitledBorder("Primary Details"));
 
         GridBagConstraints leftGbc = new GridBagConstraints();
         leftGbc.insets = new Insets(5, 5, 5, 5);
         leftGbc.anchor = GridBagConstraints.WEST;
-        leftGbc.gridx = 0; leftGbc.gridy = 0;
+        leftGbc.gridx = 0;
+        leftGbc.gridy = 0;
 
+        // ✅ Product Information
         leftPanel.add(new JLabel("Product ID:"), leftGbc);
         leftGbc.gridx = 1;
         productIdLabel = new JLabel("Loading...");
         leftPanel.add(productIdLabel, leftGbc);
 
-        leftGbc.gridx = 0; leftGbc.gridy++;
+        leftGbc.gridx = 0;
+        leftGbc.gridy++;
         leftPanel.add(new JLabel("Product Name:"), leftGbc);
         leftGbc.gridx = 1;
-        productNameField = createEditableTextField("Loading...");
         leftPanel.add(productNameField, leftGbc);
 
-        leftGbc.gridx = 0; leftGbc.gridy++;
+        leftGbc.gridx = 0;
+        leftGbc.gridy++;
         leftPanel.add(new JLabel("Buying Price:"), leftGbc);
         leftGbc.gridx = 1;
-        buyingPriceField = createEditableTextField("Loading...");
         leftPanel.add(buyingPriceField, leftGbc);
 
-        leftGbc.gridx = 0; leftGbc.gridy++;
+        leftGbc.gridx = 0;
+        leftGbc.gridy++;
         leftPanel.add(new JLabel("Category:"), leftGbc);
         leftGbc.gridx = 1;
-        categoryField = createEditableTextField("Loading...");
         leftPanel.add(categoryField, leftGbc);
 
-        leftGbc.gridx = 0; leftGbc.gridy++;
+        leftGbc.gridx = 0;
+        leftGbc.gridy++;
         leftPanel.add(new JLabel("Supplier:"), leftGbc);
         leftGbc.gridx = 1;
-        supplierField = createEditableTextField("Loading...");
         leftPanel.add(supplierField, leftGbc);
 
-        leftGbc.gridx = 0; leftGbc.gridy++;
+        leftGbc.gridx = 0;
+        leftGbc.gridy++;
         leftPanel.add(new JLabel("Quantity:"), leftGbc);
         leftGbc.gridx = 1;
-        quantityField = createEditableTextField("Loading...");
         leftPanel.add(quantityField, leftGbc);
 
-        leftGbc.gridx = 0; leftGbc.gridy++;
+        // ✅ Stock Summary (Moved from Right Panel to Left Panel)
+        leftGbc.gridx = 0;
+        leftGbc.gridy++;
+        leftPanel.add(new JLabel("Stock On Hand:"), leftGbc);
+        leftGbc.gridx = 1;
+        stockOnHandLabel = new JLabel("Loading...");
+        leftPanel.add(stockOnHandLabel, leftGbc);
+
+        leftGbc.gridx = 0;
+        leftGbc.gridy++;
+        leftPanel.add(new JLabel("On the Way:"), leftGbc);
+        leftGbc.gridx = 1;
+        onTheWayStockLabel = new JLabel("Loading...");
+        leftPanel.add(onTheWayStockLabel, leftGbc);
+
+        leftGbc.gridx = 0;
+        leftGbc.gridy++;
         leftPanel.add(new JLabel("Threshold:"), leftGbc);
         leftGbc.gridx = 1;
         thresholdField = createEditableTextField("Loading...");
         leftPanel.add(thresholdField, leftGbc);
 
-        // ✅ Right Panel - Stock Summary & Image
-        JPanel rightPanel = new JPanel(new GridBagLayout());
-        rightPanel.setBorder(BorderFactory.createTitledBorder("Stock Summary"));
+        // ✅ Right Panel - Product Image Only
+        JPanel rightPanel = new JPanel(new BorderLayout());
+        rightPanel.setBorder(BorderFactory.createTitledBorder("Product Image"));
 
-        GridBagConstraints rightGbc = new GridBagConstraints();
-        rightGbc.insets = new Insets(5, 5, 5, 5);
-        rightGbc.anchor = GridBagConstraints.CENTER;
-        rightGbc.gridx = 0; rightGbc.gridy = 0;
-
-        // ✅ Product Image
         JLabel productImageLabel = new JLabel();
         productImageLabel.setBorder(BorderFactory.createDashedBorder(Color.GRAY));
         productImageLabel.setHorizontalAlignment(JLabel.CENTER);
         productImageLabel.setPreferredSize(new Dimension(150, 150));
-        productImageLabel.setIcon(new ImageIcon("path/to/product-image.jpg")); // Placeholder
-        rightPanel.add(productImageLabel, rightGbc);
 
-        rightGbc.gridy++;
-        rightPanel.add(new JLabel("Stock On Hand:"), rightGbc);
-        rightGbc.gridx = 1;
-        stockOnHandLabel = new JLabel("Loading...");
-        rightPanel.add(stockOnHandLabel, rightGbc);
+        // ✅ Load and Scale Image to Fit with Aspect Ratio
+        String imagePath = "src\\main\\resources\\img\\no-image-available.jpg"; // Replace with actual path
+        ImageIcon originalIcon = new ImageIcon(imagePath);
 
-        rightGbc.gridx = 0; rightGbc.gridy++;
-        rightPanel.add(new JLabel("On the Way:"), rightGbc);
-        rightGbc.gridx = 1;
-        onTheWayStockLabel = new JLabel("Loading...");
-        rightPanel.add(onTheWayStockLabel, rightGbc);
+        if (originalIcon.getIconWidth() > 0 && originalIcon.getIconHeight() > 0) {
+            Image scaledImage = getScaledImage(originalIcon.getImage(), 150, 150);
+            productImageLabel.setIcon(new ImageIcon(scaledImage));
+        } else {
+            productImageLabel.setText("No Image");
+            productImageLabel.setHorizontalAlignment(JLabel.CENTER);
+        }
 
-        rightGbc.gridx = 0; rightGbc.gridy++;
-        rightPanel.add(new JLabel("Threshold:"), rightGbc);
-        rightGbc.gridx = 1;
-        rightPanel.add(thresholdField, rightGbc);
+        // ✅ Add Image Label to Panel
+        rightPanel.add(productImageLabel, BorderLayout.CENTER);
 
-        // ✅ Add Panels to Overview Layout
-        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0.4; // ✅ 60% of width to left panel
+//        JLabel productImageLabel = new JLabel();
+//        productImageLabel.setBorder(BorderFactory.createDashedBorder(Color.GRAY));
+//        productImageLabel.setHorizontalAlignment(JLabel.CENTER);
+//        productImageLabel.setPreferredSize(new Dimension(150, 150));
+//        productImageLabel.setIcon(new ImageIcon("src\\main\\resources\\img\\no-image-available.jpg")); // Placeholder
+//        rightPanel.add(productImageLabel, BorderLayout.CENTER);
+
+        // ✅ Add Left and Right Panels to Overview Panel
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 0.4; // Left Panel takes 70% width
         overviewPanel.add(leftPanel, gbc);
 
-        gbc.gridx = 1; gbc.weightx = 0.6; // ✅ 40% of width to right panel
+        gbc.gridx = 1;
+        gbc.weightx = 0.6; // Right Panel takes 30% width
         overviewPanel.add(rightPanel, gbc);
 
         return overviewPanel;
     }
+
 
     private JPanel createStockLocationsPanel() {
         JPanel stockLocationsPanel = new JPanel(new BorderLayout(10, 10));
         stockLocationsPanel.setBorder(BorderFactory.createTitledBorder("Stock Locations"));
 
         String[] columnNames = {"Store Name", "Stock in Hand"};
-        Object[][] data = {{"Loading...", "Loading..."}};
+        Object[][] data = {{"Loading...","Loading..."}};
 
         JTable stockLocationsTable = new JTable(data, columnNames);
         JScrollPane scrollPane = new JScrollPane(stockLocationsTable);
@@ -168,68 +205,18 @@ public class ProductInfoPanel extends JPanel {
         return stockLocationsPanel;
     }
 
-    // **Load Product Data Asynchronously**
-    public void loadProductDataAsync() {
-        new SwingWorker<Void, Void>() {
-            private String productName, category, supplier;
-            private double buyingPrice;
-            private int quantity, threshold, stockOnHand, onTheWayStock;
-            private Object[][] stockLocations;
-
-            @Override
-            protected Void doInBackground() {
-                // ✅ Fetch Data in Background
-                productName = productVM.getProductName();
-                category = productVM.getCategory();
-                supplier = productVM.getSupplier();
-                buyingPrice = productVM.getBuyingPrice();
-                quantity = productVM.getQuantity();
-                threshold = productVM.getThreshold();
-                stockOnHand = productVM.getStockOnHand();
-                onTheWayStock = productVM.getOnTheWayStock();
-                stockLocations = productVM.getStockLocations();
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                SwingUtilities.invokeLater(() -> {
-                    // ✅ Update UI Fields with Data
-                    productIdLabel.setText(String.valueOf(productId));
-                    productNameField.setText(productName);
-                    buyingPriceField.setText("" + buyingPrice);
-                    categoryField.setText(category);
-                    supplierField.setText(supplier);
-                    quantityField.setText("" + quantity);
-                    thresholdField.setText(String.valueOf(threshold));
-                    stockOnHandLabel.setText(String.valueOf(stockOnHand));
-                    onTheWayStockLabel.setText(String.valueOf(onTheWayStock));
-
-                    // ✅ Refresh UI
-                    revalidate();
-                    repaint();
-                });
-            }
-        }.execute();
-    }
-
     // ✅ Toggle Edit & Save Mode
     private void toggleEditSaveMode() {
         isEditing = !isEditing;
         boolean editable = isEditing;
 
-        // ✅ Enable/Disable Editing
         productNameField.setEditable(editable);
         buyingPriceField.setEditable(editable);
-//        categoryField.setEditable(editable);
-//        supplierField.setEditable(editable);
         quantityField.setEditable(editable);
         thresholdField.setEditable(editable);
 
-        // ✅ Change Button Text
         editSaveButton.setText(isEditing ? "Save" : "Edit");
 
-        // ✅ Save Changes on Click
         if (!isEditing) {
             saveProductChanges();
         }
@@ -256,10 +243,66 @@ public class ProductInfoPanel extends JPanel {
                 success ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
     }
 
+    // ✅ Load Product Data Asynchronously
+    void loadProductDataAsync() {
+        new SwingWorker<Void, Void>() {
+            private String productName, category, supplier;
+            private double buyingPrice;
+            private int quantity, threshold, stockOnHand, onTheWayStock;
+
+            @Override
+            protected Void doInBackground() {
+                productName = productVM.getProductName();
+                category = productVM.getCategory();
+                supplier = productVM.getSupplier();
+                buyingPrice = productVM.getBuyingPrice();
+                quantity = productVM.getQuantity();
+                threshold = productVM.getThreshold();
+                stockOnHand = productVM.getStockOnHand();
+                onTheWayStock = productVM.getOnTheWayStock();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                SwingUtilities.invokeLater(() -> {
+                    productIdLabel.setText(String.valueOf(productId));
+                    productNameField.setText(productName);
+                    buyingPriceField.setText("" + buyingPrice);
+                    categoryField.setText(category);
+                    supplierField.setText(supplier);
+                    quantityField.setText("" + quantity);
+                    thresholdField.setText(String.valueOf(threshold));
+                    stockOnHandLabel.setText(String.valueOf(stockOnHand));
+                    onTheWayStockLabel.setText(String.valueOf(onTheWayStock));
+                });
+            }
+        }.execute();
+    }
+
     // ✅ Helper Method for Editable Text Fields
     private JTextField createEditableTextField(String text) {
         JTextField field = new JTextField(text);
         field.setEditable(false);
+        field.setColumns(15); // Ensures consistent width
         return field;
+    }
+    private Image getScaledImage(Image srcImg, int maxWidth, int maxHeight) {
+        int originalWidth = srcImg.getWidth(null);
+        int originalHeight = srcImg.getHeight(null);
+
+        // Compute aspect ratio
+        double aspectRatio = (double) originalWidth / originalHeight;
+
+        int newWidth = maxWidth;
+        int newHeight = (int) (maxWidth / aspectRatio);
+
+        // If height is too big, adjust width instead
+        if (newHeight > maxHeight) {
+            newHeight = maxHeight;
+            newWidth = (int) (maxHeight * aspectRatio);
+        }
+
+        return srcImg.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
     }
 }
