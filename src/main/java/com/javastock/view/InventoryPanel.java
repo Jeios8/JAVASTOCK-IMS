@@ -20,6 +20,15 @@ public class InventoryPanel extends JPanel {
         this.viewModel = viewModel;
         setLayout(new BorderLayout());
 
+        add(createPadding(0, 20), BorderLayout.NORTH);
+        add(createPadding(20, 0), BorderLayout.EAST);
+        add(createPadding(20, 0), BorderLayout.WEST);
+        add(createPadding(0, 20), BorderLayout.SOUTH);
+        add(containerPanel(), BorderLayout.CENTER);
+    }
+        private JPanel containerPanel(){
+            JPanel containerPanel = new JPanel();
+            containerPanel.setLayout(new BorderLayout());
         // Initialize Table
         inventoryTable = new JTable(viewModel.getTableModel());
         JScrollPane scrollPane = new JScrollPane(inventoryTable);
@@ -58,9 +67,9 @@ public class InventoryPanel extends JPanel {
         progressBar.setString("Loading...");
         progressBar.setVisible(false);
 
-        add(topPanel, BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
-        add(progressBar, BorderLayout.SOUTH);
+        containerPanel.add(topPanel, BorderLayout.NORTH);
+        containerPanel.add(scrollPane, BorderLayout.CENTER);
+        containerPanel.add(progressBar, BorderLayout.SOUTH);
 
         addButton.addActionListener(e -> new AddProductDialog((JFrame) SwingUtilities.getWindowAncestor(this), viewModel));
         downloadButton.addActionListener(e -> CSVExporter.exportToCSV(inventoryTable));
@@ -74,6 +83,7 @@ public class InventoryPanel extends JPanel {
         });
 
         loadInventoryWithProgress();
+        return containerPanel;
     }
 
     private void openProductInfoDialog(int productId) {
@@ -134,5 +144,13 @@ public class InventoryPanel extends JPanel {
 
             return cell;
         }
+
     }
+    private JPanel createPadding(int width, int height) {
+        JPanel padding = new JPanel();
+        padding.setBackground(Color.LIGHT_GRAY);
+        padding.setPreferredSize(new Dimension(width, height));
+        return padding;
+    }
+
 }
