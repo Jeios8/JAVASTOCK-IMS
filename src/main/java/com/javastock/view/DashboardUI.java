@@ -30,7 +30,7 @@ public class DashboardUI extends JPanel {
         //Content Panel
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-        JLabel titleLabel = new JLabel("Manage Store");
+        JLabel titleLabel = new JLabel("Dashboard");
         titleLabel.setFont(TITLE_FONT);
 
         contentPanel.add(Box.createRigidArea(new Dimension(0, 10)));

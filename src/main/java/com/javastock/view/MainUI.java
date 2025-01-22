@@ -230,6 +230,9 @@ public class MainUI {
                 } else if (section.equals("Manage Store")) {
                     addPanelIfNeeded("Manage Store");
                 }
+                else if (section.equals("Dashboard")) {
+                    addPanelIfNeeded("Dashboard");
+                }
                 // ... More sections with dynamic panels could go here ...
 
                 // Switch to the chosen section
