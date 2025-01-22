@@ -9,28 +9,21 @@ import java.awt.*;
 public class ProductInfoPanel extends JPanel {
     private final ProductVM productVM;
     private final JFrame parentFrame;
+    private final int productId;
 
     // Editable fields
     private JTextField productNameField, buyingPriceField, categoryField, supplierField, quantityField, thresholdField;
+    private JLabel productIdLabel, stockOnHandLabel, onTheWayStockLabel;
     private JButton editSaveButton;
+    private boolean isEditing = false; // Toggle state for edit mode
 
     public ProductInfoPanel(JFrame parent, int productId) {
         this.parentFrame = parent;
+        this.productId = productId;
         this.productVM = new ProductVM(productId);
 
         setLayout(new BorderLayout(20, 20));
         setBorder(new EmptyBorder(20, 20, 20, 20)); // Padding
-
-        // ✅ Fetch Product Data using ProductVM
-        int productIdVal = productVM.getProductId();
-        String productName = productVM.getProductName();
-        double buyingPrice = productVM.getBuyingPrice();
-        String category = productVM.getCategory();
-        String supplierName = productVM.getSupplier();
-        int quantity = productVM.getQuantity();
-        int threshold = productVM.getThreshold();
-        int stockOnHand = productVM.getStockOnHand();
-        int onTheWayStock = productVM.getOnTheWayStock();
 
         // ✅ Buttons Panel (Anchored to the Top Right)
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -39,12 +32,9 @@ public class ProductInfoPanel extends JPanel {
         buttonPanel.add(editSaveButton);
         buttonPanel.add(downloadButton);
 
-        // ✅ Make the Edit/Save Button Functional
-        editSaveButton.addActionListener(e -> toggleEditSaveMode());
-
         // ✅ Tabs
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Overview", createOverviewPanel(productIdVal, productName, buyingPrice, category, supplierName, quantity, threshold, stockOnHand, onTheWayStock));
+        tabbedPane.addTab("Overview", createOverviewPanel());
         tabbedPane.addTab("Purchases", new JPanel()); // Placeholder
         tabbedPane.addTab("Adjustments", new JPanel()); // Placeholder
         tabbedPane.addTab("History", new JPanel()); // Placeholder
@@ -56,42 +46,78 @@ public class ProductInfoPanel extends JPanel {
 
         add(mainPanel, BorderLayout.NORTH);
         add(createStockLocationsPanel(), BorderLayout.CENTER);
+
+        // ✅ Add Action Listener for Edit Button
+        editSaveButton.addActionListener(e -> toggleEditSaveMode());
+
+        // ✅ Load Data Asynchronously
+        loadProductDataAsync();
     }
 
-    private JPanel createOverviewPanel(int productId, String productName, double buyingPrice, String category, String supplierName, int quantity, int threshold, int stockOnHand, int onTheWayStock) {
-        JPanel overviewPanel = new JPanel(new BorderLayout(10, 10));
+    private JPanel createOverviewPanel() {
+        JPanel overviewPanel = new JPanel(new GridBagLayout()); // ✅ Use GridBagLayout for better alignment
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10); // ✅ Spacing between elements
+        gbc.fill = GridBagConstraints.BOTH;
 
-        // ✅ Left Side - Product & Supplier Details
-        JPanel leftPanel = new JPanel(new GridLayout(6, 2, 5, 5));
+        // ✅ Left Panel - Product & Supplier Details
+        JPanel leftPanel = new JPanel(new GridBagLayout());
         leftPanel.setBorder(BorderFactory.createTitledBorder("Primary Details"));
 
-        leftPanel.add(new JLabel("Product ID:"));
-        leftPanel.add(new JLabel(String.valueOf(productId)));
+        GridBagConstraints leftGbc = new GridBagConstraints();
+        leftGbc.insets = new Insets(5, 5, 5, 5);
+        leftGbc.anchor = GridBagConstraints.WEST;
+        leftGbc.gridx = 0; leftGbc.gridy = 0;
 
-        leftPanel.add(new JLabel("Product Name:"));
-        productNameField = createTextField(productName);
-        leftPanel.add(productNameField);
+        leftPanel.add(new JLabel("Product ID:"), leftGbc);
+        leftGbc.gridx = 1;
+        productIdLabel = new JLabel("Loading...");
+        leftPanel.add(productIdLabel, leftGbc);
 
-        leftPanel.add(new JLabel("Buying Price:"));
-        buyingPriceField = createTextField(String.valueOf(buyingPrice));
-        leftPanel.add(buyingPriceField);
+        leftGbc.gridx = 0; leftGbc.gridy++;
+        leftPanel.add(new JLabel("Product Name:"), leftGbc);
+        leftGbc.gridx = 1;
+        productNameField = createEditableTextField("Loading...");
+        leftPanel.add(productNameField, leftGbc);
 
-        leftPanel.add(new JLabel("Category:"));
-        categoryField = createTextField(category);
-        leftPanel.add(categoryField);
+        leftGbc.gridx = 0; leftGbc.gridy++;
+        leftPanel.add(new JLabel("Buying Price:"), leftGbc);
+        leftGbc.gridx = 1;
+        buyingPriceField = createEditableTextField("Loading...");
+        leftPanel.add(buyingPriceField, leftGbc);
 
-        leftPanel.add(new JLabel("Supplier:"));
-        supplierField = createTextField(supplierName);
-        leftPanel.add(supplierField);
+        leftGbc.gridx = 0; leftGbc.gridy++;
+        leftPanel.add(new JLabel("Category:"), leftGbc);
+        leftGbc.gridx = 1;
+        categoryField = createEditableTextField("Loading...");
+        leftPanel.add(categoryField, leftGbc);
 
-        leftPanel.add(new JLabel("Quantity:"));
-        quantityField = createTextField(String.valueOf(quantity));
-        leftPanel.add(quantityField);
+        leftGbc.gridx = 0; leftGbc.gridy++;
+        leftPanel.add(new JLabel("Supplier:"), leftGbc);
+        leftGbc.gridx = 1;
+        supplierField = createEditableTextField("Loading...");
+        leftPanel.add(supplierField, leftGbc);
 
-        overviewPanel.add(leftPanel, BorderLayout.WEST);
+        leftGbc.gridx = 0; leftGbc.gridy++;
+        leftPanel.add(new JLabel("Quantity:"), leftGbc);
+        leftGbc.gridx = 1;
+        quantityField = createEditableTextField("Loading...");
+        leftPanel.add(quantityField, leftGbc);
 
-        // ✅ Right Side - Stock Summary & Image
-        JPanel rightPanel = new JPanel(new BorderLayout());
+        leftGbc.gridx = 0; leftGbc.gridy++;
+        leftPanel.add(new JLabel("Threshold:"), leftGbc);
+        leftGbc.gridx = 1;
+        thresholdField = createEditableTextField("Loading...");
+        leftPanel.add(thresholdField, leftGbc);
+
+        // ✅ Right Panel - Stock Summary & Image
+        JPanel rightPanel = new JPanel(new GridBagLayout());
+        rightPanel.setBorder(BorderFactory.createTitledBorder("Stock Summary"));
+
+        GridBagConstraints rightGbc = new GridBagConstraints();
+        rightGbc.insets = new Insets(5, 5, 5, 5);
+        rightGbc.anchor = GridBagConstraints.CENTER;
+        rightGbc.gridx = 0; rightGbc.gridy = 0;
 
         // ✅ Product Image
         JLabel productImageLabel = new JLabel();
@@ -99,25 +125,31 @@ public class ProductInfoPanel extends JPanel {
         productImageLabel.setHorizontalAlignment(JLabel.CENTER);
         productImageLabel.setPreferredSize(new Dimension(150, 150));
         productImageLabel.setIcon(new ImageIcon("path/to/product-image.jpg")); // Placeholder
+        rightPanel.add(productImageLabel, rightGbc);
 
-        // ✅ Stock Summary Panel
-        JPanel stockPanel = new JPanel(new GridLayout(4, 2, 5, 5));
-        stockPanel.setBorder(BorderFactory.createTitledBorder("Stock Summary"));
+        rightGbc.gridy++;
+        rightPanel.add(new JLabel("Stock On Hand:"), rightGbc);
+        rightGbc.gridx = 1;
+        stockOnHandLabel = new JLabel("Loading...");
+        rightPanel.add(stockOnHandLabel, rightGbc);
 
-        stockPanel.add(new JLabel("Stock On Hand:"));
-        stockPanel.add(new JLabel(String.valueOf(stockOnHand)));
+        rightGbc.gridx = 0; rightGbc.gridy++;
+        rightPanel.add(new JLabel("On the Way:"), rightGbc);
+        rightGbc.gridx = 1;
+        onTheWayStockLabel = new JLabel("Loading...");
+        rightPanel.add(onTheWayStockLabel, rightGbc);
 
-        stockPanel.add(new JLabel("On the Way:"));
-        stockPanel.add(new JLabel(String.valueOf(onTheWayStock)));
+        rightGbc.gridx = 0; rightGbc.gridy++;
+        rightPanel.add(new JLabel("Threshold:"), rightGbc);
+        rightGbc.gridx = 1;
+        rightPanel.add(thresholdField, rightGbc);
 
-        stockPanel.add(new JLabel("Threshold:"));
-        thresholdField = createTextField(String.valueOf(threshold));
-        stockPanel.add(thresholdField);
+        // ✅ Add Panels to Overview Layout
+        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0.4; // ✅ 60% of width to left panel
+        overviewPanel.add(leftPanel, gbc);
 
-        rightPanel.add(productImageLabel, BorderLayout.NORTH);
-        rightPanel.add(stockPanel, BorderLayout.SOUTH);
-
-        overviewPanel.add(rightPanel, BorderLayout.EAST);
+        gbc.gridx = 1; gbc.weightx = 0.6; // ✅ 40% of width to right panel
+        overviewPanel.add(rightPanel, gbc);
 
         return overviewPanel;
     }
@@ -126,9 +158,8 @@ public class ProductInfoPanel extends JPanel {
         JPanel stockLocationsPanel = new JPanel(new BorderLayout(10, 10));
         stockLocationsPanel.setBorder(BorderFactory.createTitledBorder("Stock Locations"));
 
-        // ✅ Fetch stock location data from ProductVM
         String[] columnNames = {"Store Name", "Stock in Hand"};
-        Object[][] data = productVM.getStockLocations();
+        Object[][] data = {{"Loading...", "Loading..."}};
 
         JTable stockLocationsTable = new JTable(data, columnNames);
         JScrollPane scrollPane = new JScrollPane(stockLocationsTable);
@@ -137,23 +168,70 @@ public class ProductInfoPanel extends JPanel {
         return stockLocationsPanel;
     }
 
-    // ✅ Method to toggle between Edit and Save mode
-    private void toggleEditSaveMode() {
-        boolean isEditing = productNameField.isEditable();
+    // **Load Product Data Asynchronously**
+    public void loadProductDataAsync() {
+        new SwingWorker<Void, Void>() {
+            private String productName, category, supplier;
+            private double buyingPrice;
+            private int quantity, threshold, stockOnHand, onTheWayStock;
+            private Object[][] stockLocations;
 
-        if (isEditing) {
-            // ✅ Save Data
+            @Override
+            protected Void doInBackground() {
+                // ✅ Fetch Data in Background
+                productName = productVM.getProductName();
+                category = productVM.getCategory();
+                supplier = productVM.getSupplier();
+                buyingPrice = productVM.getBuyingPrice();
+                quantity = productVM.getQuantity();
+                threshold = productVM.getThreshold();
+                stockOnHand = productVM.getStockOnHand();
+                onTheWayStock = productVM.getOnTheWayStock();
+                stockLocations = productVM.getStockLocations();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                SwingUtilities.invokeLater(() -> {
+                    // ✅ Update UI Fields with Data
+                    productIdLabel.setText(String.valueOf(productId));
+                    productNameField.setText(productName);
+                    buyingPriceField.setText("" + buyingPrice);
+                    categoryField.setText(category);
+                    supplierField.setText(supplier);
+                    quantityField.setText("" + quantity);
+                    thresholdField.setText(String.valueOf(threshold));
+                    stockOnHandLabel.setText(String.valueOf(stockOnHand));
+                    onTheWayStockLabel.setText(String.valueOf(onTheWayStock));
+
+                    // ✅ Refresh UI
+                    revalidate();
+                    repaint();
+                });
+            }
+        }.execute();
+    }
+
+    // ✅ Toggle Edit & Save Mode
+    private void toggleEditSaveMode() {
+        isEditing = !isEditing;
+        boolean editable = isEditing;
+
+        // ✅ Enable/Disable Editing
+        productNameField.setEditable(editable);
+        buyingPriceField.setEditable(editable);
+//        categoryField.setEditable(editable);
+//        supplierField.setEditable(editable);
+        quantityField.setEditable(editable);
+        thresholdField.setEditable(editable);
+
+        // ✅ Change Button Text
+        editSaveButton.setText(isEditing ? "Save" : "Edit");
+
+        // ✅ Save Changes on Click
+        if (!isEditing) {
             saveProductChanges();
-            editSaveButton.setText("Edit");
-        } else {
-            // ✅ Enable Fields for Editing
-            productNameField.setEditable(true);
-            buyingPriceField.setEditable(true);
-//            categoryField.setEditable(true);
-//            supplierField.setEditable(true);
-            quantityField.setEditable(true);
-            thresholdField.setEditable(true);
-            editSaveButton.setText("Save");
         }
     }
 
@@ -173,23 +251,13 @@ public class ProductInfoPanel extends JPanel {
         }
 
         boolean success = productVM.updateProduct(newName, newPrice, newQuantity, newThreshold);
-        if (success) {
-            JOptionPane.showMessageDialog(this, "Product updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(this, "Failed to update product.", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-
-        // ✅ Disable Fields After Saving
-        productNameField.setEditable(false);
-        buyingPriceField.setEditable(false);
-        categoryField.setEditable(false);
-        supplierField.setEditable(false);
-        quantityField.setEditable(false);
-        thresholdField.setEditable(false);
+        JOptionPane.showMessageDialog(this, success ? "Product updated successfully!" : "Failed to update product.",
+                success ? "Success" : "Error",
+                success ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
     }
 
-    // ✅ Helper Method to Create a Disabled JTextField
-    private JTextField createTextField(String text) {
+    // ✅ Helper Method for Editable Text Fields
+    private JTextField createEditableTextField(String text) {
         JTextField field = new JTextField(text);
         field.setEditable(false);
         return field;

@@ -35,23 +35,41 @@ public class InventoryPanel extends JPanel {
         inventoryTable.setDefaultRenderer(Object.class, new StockStatusRenderer());
         inventoryTable.setDefaultEditor(Object.class, null);
 
-        inventoryTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    int selectedRow = inventoryTable.getSelectedRow();
-                    if (selectedRow != -1) {
-                        Object productIdObj = inventoryTable.getValueAt(selectedRow, 0);
-                        if (productIdObj instanceof Integer) {
-                            int productId = (Integer) productIdObj;
-                            openProductInfoDialog(productId);
+            inventoryTable.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getClickCount() == 2) { // Detect double-click
+                        int selectedRow = inventoryTable.getSelectedRow();
+                        if (selectedRow != -1) {
+                            Object productIdObj = inventoryTable.getValueAt(selectedRow, 0);
+
+                            if (productIdObj instanceof Integer) {
+                                int productId = (Integer) productIdObj;
+
+                                // ✅ Get Parent Frame
+                                JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(InventoryPanel.this);
+
+                                // ✅ Open ProductInfoPanel in a JFrame
+                                JFrame productFrame = new JFrame("Product Details");
+                                productFrame.setSize(515, 515);
+                                productFrame.setLocationRelativeTo(null);
+                                productFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+                                ProductInfoPanel productInfoPanel = new ProductInfoPanel(parentFrame, productId);
+                                productFrame.add(productInfoPanel);
+                                productFrame.setVisible(true);
+
+                                // ✅ Load product data asynchronously (No Arguments Needed Now)
+                                productInfoPanel.loadProductDataAsync();  // ✅ No argument needed anymore
+                            } else {
+                                JOptionPane.showMessageDialog(null, "Error: Product ID is invalid!", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
 
-        // Buttons & Filter
+            // Buttons & Filter
         addButton = new JButton("Add Product");
         downloadButton = new JButton("Export CSV");
         filterDropdown = new JComboBox<>(new String[]{"All", "In-stock", "Low stock", "Out of stock"});
