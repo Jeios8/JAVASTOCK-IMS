@@ -1,16 +1,16 @@
 package main.java.com.javastock.view;
 
-import main.java.com.javastock.viewmodel.SupplierVM;
+import main.java.com.javastock.viewmodel.OrdersVM;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class SupplierUI extends JPanel {
-    private SupplierVM supplierVM;
+public class OrdersUI extends JPanel {
+    private OrdersVM ordersVM;
     private static final Font TITLE_FONT = new Font("Helvetica", Font.BOLD, 16);
 
-    public SupplierUI(SupplierVM viewModel) {
-        this.supplierVM = viewModel;
+    public OrdersUI(OrdersVM viewModel) {
+        this.ordersVM = viewModel;
         setLayout(new BorderLayout());
 
         //Add components to main Panel
@@ -30,7 +30,7 @@ public class SupplierUI extends JPanel {
         //Content Panel
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-        JLabel titleLabel = new JLabel("Suppliers");
+        JLabel titleLabel = new JLabel("Orders");
         titleLabel.setFont(TITLE_FONT);
 
         contentPanel.add(Box.createRigidArea(new Dimension(0, 10)));

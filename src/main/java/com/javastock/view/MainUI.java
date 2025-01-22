@@ -39,12 +39,18 @@ public class MainUI {
         // 1. Initialize and store your custom panels in the map
         DashboardUI dashboardUI = new DashboardUI(new DashboardVM());
         InventoryPanel inventoryPanel = new InventoryPanel(new InventoryVM());
+        ReportsUI reportsUI = new ReportsUI(new ReportsVM());
+        SupplierUI supplierUI = new SupplierUI(new SupplierVM());
+        OrdersUI ordersUI = new OrdersUI(new OrdersVM());
         WarehousePanel warehousePanel = new WarehousePanel(new WarehouseVM());
 
 
         // Map keys match the ViewModel sections:
         dynamicPanels.put("Dashboard", dashboardUI);
         dynamicPanels.put("Inventory", inventoryPanel);
+        dynamicPanels.put("Reports", reportsUI);
+        dynamicPanels.put("Suppliers", supplierUI);
+        dynamicPanels.put("Orders", ordersUI);
         dynamicPanels.put("Manage Store", warehousePanel);
 
         // 2. Proceed with standard UI initialization
@@ -227,11 +233,21 @@ public class MainUI {
                 if (section.equals("Inventory")) {
                     addPanelIfNeeded("Inventory");
                     ((InventoryPanel) dynamicPanels.get("Inventory")).loadInventoryWithProgress();
-                } else if (section.equals("Manage Store")) {
-                    addPanelIfNeeded("Manage Store");
                 }
                 else if (section.equals("Dashboard")) {
                     addPanelIfNeeded("Dashboard");
+                }
+                else if (section.equals("Suppliers")) {
+                    addPanelIfNeeded("Suppliers");
+                }
+                else if (section.equals("Reports")) {
+                    addPanelIfNeeded("Reports");
+                }
+                else if (section.equals("Orders")) {
+                    addPanelIfNeeded("Orders");
+                }
+                else if (section.equals("Manage Store")) {
+                    addPanelIfNeeded("Manage Store");
                 }
                 // ... More sections with dynamic panels could go here ...
 
