@@ -1,24 +1,29 @@
 package main.java.com.javastock.view;
 
 import main.java.com.javastock.viewmodel.InventoryVM;
-import main.java.com.javastock.viewmodel.MainVM;
 import main.java.com.javastock.viewmodel.LoginVM;
+import main.java.com.javastock.viewmodel.MainVM;
 import main.java.com.javastock.viewmodel.WarehouseVM;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.util.HashMap;
-
 import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainUI {
     private MainVM viewModel;
     private JPanel contentPanel;
     private CardLayout cardLayout;
+
+    // Map of dynamic panels keyed by their section names
+    private Map<String, JPanel> dynamicPanels = new HashMap<>();
+
+    // Paths to your icons
     String[] sourceIcons = {
             "src\\main\\resources\\icons\\Icon_Dashboard.png",
             "src\\main\\resources\\icons\\Icon_Inventory.png",
@@ -28,22 +33,31 @@ public class MainUI {
             "src\\main\\resources\\icons\\Icon_Store.png",
             "src\\main\\resources\\icons\\Icon_Logout.png"
     };
-    ImageIcon[] menuIcons = resizeIcons(sourceIcons, 20,20);//Resized Icons to 25x25 pixels
+    ImageIcon[] menuIcons = resizeIcons(sourceIcons, 20, 20); // Resized icons to 20x20 pixels
 
     public MainUI(MainVM viewModel) {
         if (viewModel == null) throw new IllegalArgumentException("MainVM cannot be null");
         this.viewModel = viewModel;
+
+        // 1. Initialize and store your custom panels in the map
+        InventoryPanel inventoryPanel = new InventoryPanel(new InventoryVM());
+        WarehousePanel warehousePanel = new WarehousePanel(new WarehouseVM());
+
+        // Map keys match the ViewModel sections:
+        dynamicPanels.put("Inventory", inventoryPanel);
+        dynamicPanels.put("Manage Store", warehousePanel);
+
+        // 2. Proceed with standard UI initialization
         initializeUI();
     }
 
-    public void initializeUI() {
+    private void initializeUI() {
         JFrame mainFrame = new JFrame("JAVASTOCK");
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainFrame.setUndecorated(false);
         mainFrame.setSize(1280, 720);
         mainFrame.setLocationRelativeTo(null);
-        //Start in Fullscreen
-        //mainFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        // mainFrame.setExtendedState(JFrame.MAXIMIZED_BOTH); // for fullscreen
 
         JPanel mainPanel = new JPanel(new BorderLayout(10, 20));
         mainPanel.setBackground(Color.LIGHT_GRAY);
@@ -59,7 +73,7 @@ public class MainUI {
         cardLayout = new CardLayout();
         contentPanel = new JPanel(cardLayout);
 
-        // Add sections dynamically
+        // 3. Add sections from the ViewModel (default content panels)
         for (String section : viewModel.getSections().keySet()) {
             JPanel panel = new JPanel();
             panel.setBackground(viewModel.getSectionColor(section));
@@ -74,10 +88,65 @@ public class MainUI {
         mainFrame.setVisible(true);
     }
 
-    /** Sidebar Menu */
+    /**
+     * Helper method to add a panel to the contentPanel if it hasn't been added before.
+     * @param sectionKey The key used to retrieve the panel from dynamicPanels
+     */
+    private void addPanelIfNeeded(String sectionKey) {
+        JPanel panel = dynamicPanels.get(sectionKey);
+        if (panel != null && !isPanelAdded(panel)) {
+            contentPanel.add(panel, sectionKey);
+        }
+    }
+
+    /**
+     * Checks if the given panel is already in contentPanel.
+     */
+    private boolean isPanelAdded(JPanel panel) {
+        for (Component comp : contentPanel.getComponents()) {
+            if (comp == panel) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the appropriate icon for each section.
+     */
+    public ImageIcon getIconForSection(String section) {
+        return switch (section) {
+            case "Dashboard" -> new ImageIcon(menuIcons[0].getImage());
+            case "Inventory" -> new ImageIcon(menuIcons[1].getImage());
+            case "Reports" -> new ImageIcon(menuIcons[2].getImage());
+            case "Suppliers" -> new ImageIcon(menuIcons[3].getImage());
+            case "Orders" -> new ImageIcon(menuIcons[4].getImage());
+            case "Manage Store" -> new ImageIcon(menuIcons[5].getImage());
+            default -> null;
+        };
+    }
+
+    /**
+     * Helper method to resize icons.
+     */
+    public static ImageIcon[] resizeIcons(String[] sourceIcons, int targetWidth, int targetHeight) {
+        ImageIcon[] menuIcons = new ImageIcon[sourceIcons.length];
+        for (int i = 0; i < sourceIcons.length; i++) {
+            try {
+                BufferedImage originalImage = ImageIO.read(new File(sourceIcons[i]));
+                Image resizedImage = originalImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
+                menuIcons[i] = new ImageIcon(resizedImage);
+            } catch (IOException e) {
+                System.out.println("Error loading image: " + sourceIcons[i]);
+            }
+        }
+        return menuIcons;
+    }
+
+    // -------------------------------------------
+    // Sidebar Menu Inner Class
+    // -------------------------------------------
     private class MenuPanel extends JPanel {
-        private InventoryPanel inventoryPanel = new InventoryPanel(new InventoryVM()); // Create once
-        private WarehousePanel warehousePanel = new WarehousePanel(new WarehouseVM());
         private HashMap<String, JButton> menuButtons = new HashMap<>();
         private JButton activeButton;
         private MainVM viewModel;
@@ -96,21 +165,20 @@ public class MainUI {
             menuContainer.setLayout(new BoxLayout(menuContainer, BoxLayout.Y_AXIS));
             menuContainer.setBackground(getBackground());
 
+            // Logo & spacing
             menuContainer.add(createLogoPanel());
             menuContainer.add(Box.createVerticalStrut(20));
 
+            // Create buttons for each section
             for (String section : viewModel.getSections().keySet()) {
-                ImageIcon icon = getIconForSection(section);
                 JButton button = createMenuButton(section);
-                button.setIcon(icon);
-                button.setIconTextGap(20);
                 menuButtons.put(section, button);
                 menuContainer.add(button);
                 menuContainer.add(Box.createVerticalStrut(5));
             }
-            // ** Fix Logout Button Height **
-            JButton logoutButton = new JButton("Logout");
 
+            // Logout button
+            JButton logoutButton = new JButton("Logout");
             logoutButton.setIcon(new ImageIcon(menuIcons[6].getImage()));
             logoutButton.setIconTextGap(20);
             logoutButton.setBackground(Color.WHITE);
@@ -120,41 +188,24 @@ public class MainUI {
             logoutButton.setFont(new Font("Helvetica", Font.PLAIN, 17));
             logoutButton.setHorizontalAlignment(SwingConstants.LEFT);
 
-            // Set button size
-            logoutButton.setPreferredSize(new Dimension(200, 50)); // Fixed height
-            logoutButton.setMinimumSize(new Dimension(200, 50));   // Prevent shrinking
-            logoutButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50)); // Expand width
+            logoutButton.setPreferredSize(new Dimension(200, 50));
+            logoutButton.setMinimumSize(new Dimension(200, 50));
+            logoutButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
 
             logoutButton.addActionListener(e -> handleLogout());
 
-            // Wrap in a panel with BoxLayout for proper height control
             JPanel logoutPanel = new JPanel();
             logoutPanel.setLayout(new BoxLayout(logoutPanel, BoxLayout.Y_AXIS));
             logoutPanel.setBackground(getBackground());
-            logoutPanel.add(Box.createVerticalGlue()); // Push logout button to the bottom
+            logoutPanel.add(Box.createVerticalGlue());
             logoutPanel.add(logoutButton);
 
             add(menuContainer, BorderLayout.NORTH);
             add(logoutPanel, BorderLayout.SOUTH);
 
+            // Highlight the active section’s button
             setActiveButton(menuButtons.get(viewModel.getActiveSection()));
         }
-
-        private void handleLogout() {
-            int choice = JOptionPane.showConfirmDialog(
-                    null,  // Parent component (null centers on screen)
-                    "Are you sure you want to logout?",
-                    "Logout Confirmation",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE
-            );
-
-            if (choice == JOptionPane.YES_OPTION) {
-                mainFrame.dispose();
-                new LoginUI(new LoginVM());
-            }
-        }
-
 
         private JButton createMenuButton(String section) {
             JButton button = new JButton(section);
@@ -167,51 +218,56 @@ public class MainUI {
             button.setPreferredSize(new Dimension(200, 50));
             button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
 
-//            button.addActionListener(e -> {
-//                if (section.equals("Inventory")) {
-//                    contentPanel.add(new InventoryPanel(new InventoryVM()), "Inventory"); // Reload InventoryPanel
-//                }
-//                viewModel.setActiveSection(section);
-//                cardLayout.show(contentPanel, section);
-//                setActiveButton(button);
-//            });
+            button.setIcon(getIconForSection(section));
+            button.setIconTextGap(20);
 
+            // Handle panel addition and switching
             button.addActionListener(e -> {
+                // For sections that map to dynamic panels
                 if (section.equals("Inventory")) {
-                    if (!isInventoryAdded()) {
-                        contentPanel.add(inventoryPanel, "Inventory"); // Add it only once
-                    }
-                    inventoryPanel.loadInventoryWithProgress(); // **Show progress bar while loading**
+                    addPanelIfNeeded("Inventory");
+                    ((InventoryPanel) dynamicPanels.get("Inventory")).loadInventoryWithProgress();
+                } else if (section.equals("Manage Store")) {
+                    addPanelIfNeeded("Manage Store");
                 }
+                // ... More sections with dynamic panels could go here ...
 
-                if (section.equals("Manage Store")) {
-                        contentPanel.add(warehousePanel, "Manage Store"); // Add it only once
-                }
-
+                // Switch to the chosen section
                 viewModel.setActiveSection(section);
                 cardLayout.show(contentPanel, section);
                 setActiveButton(button);
             });
-
             return button;
+        }
+
+        private void handleLogout() {
+            int choice = JOptionPane.showConfirmDialog(
+                    null,
+                    "Are you sure you want to logout?",
+                    "Logout Confirmation",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
+            if (choice == JOptionPane.YES_OPTION) {
+                mainFrame.dispose();
+                new LoginUI(new LoginVM());
+            }
         }
 
         private void setActiveButton(JButton selectedButton) {
             if (selectedButton == null) return;
-
             for (JButton button : menuButtons.values()) {
                 button.setBackground(Color.WHITE);
                 button.setFont(new Font("Helvetica", Font.PLAIN, 16));
                 button.setForeground(Color.DARK_GRAY);
             }
-
             selectedButton.setBackground(Color.WHITE);
             selectedButton.setForeground(new Color(0, 0, 150));
             activeButton = selectedButton;
         }
 
         private JPanel createLogoPanel() {
-            JPanel logoPanel = new JPanel(new GridBagLayout()); // Use GridBagLayout for centering
+            JPanel logoPanel = new JPanel(new GridBagLayout());
             logoPanel.setBackground(getBackground());
 
             JLabel logoLabel = new JLabel("JAVASTOCK");
@@ -222,7 +278,6 @@ public class MainUI {
             subLogoLabel.setFont(new Font("Helvetica", Font.PLAIN, 15));
             subLogoLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-            // Add labels with GridBagConstraints to center them
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.gridx = 0;
             gbc.gridy = 0;
@@ -252,43 +307,5 @@ public class MainUI {
             add(searchField, BorderLayout.CENTER);
             add(searchButton, BorderLayout.EAST);
         }
-
-    }
-    public ImageIcon getIconForSection(String section) { //Place Icons on Menu Buttons
-        return switch (section) {
-            case "Dashboard" -> new ImageIcon(menuIcons[0].getImage());
-            case "Inventory" -> new ImageIcon(menuIcons[1].getImage());
-            case "Reports" -> new ImageIcon(menuIcons[2].getImage());
-            case "Suppliers" -> new ImageIcon(menuIcons[3].getImage());
-            case "Orders" -> new ImageIcon(menuIcons[4].getImage());
-            case "Manage Store" -> new ImageIcon(menuIcons[5].getImage());
-            default -> null;
-        };
-    }
-
-    //Method to resize Icons
-    public static ImageIcon[] resizeIcons(String[] sourceIcons, int targetWidth, int targetHeight) {
-        ImageIcon[] menuIcons = new ImageIcon[sourceIcons.length];
-
-        for (int i = 0; i < sourceIcons.length; i++) {
-            try {
-                BufferedImage originalImage = ImageIO.read(new File(sourceIcons[i]));
-                Image resizedImage = originalImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
-                menuIcons[i] = new ImageIcon(resizedImage);
-            } catch (IOException e) {
-                System.out.println("Error loading image: " + sourceIcons[i]);
-            }
-        }
-
-        return menuIcons;
-    }
-    // Helper method to check if InventoryPanel is already added
-    private boolean isInventoryAdded() {
-        for (Component comp : contentPanel.getComponents()) {
-            if (comp instanceof InventoryPanel) {
-                return true;
-            }
-        }
-        return false;
     }
 }
