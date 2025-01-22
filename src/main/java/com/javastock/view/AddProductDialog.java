@@ -15,7 +15,7 @@ public class AddProductDialog extends JDialog {
         super(parent, "Add Product", true);
         this.viewModel = viewModel;
         setLayout(new BorderLayout());
-        setSize(420, 440);
+        setSize(420, 600);
         setLocationRelativeTo(parent);
         setResizable(false);
 

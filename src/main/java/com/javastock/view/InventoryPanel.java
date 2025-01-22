@@ -87,13 +87,19 @@ public class InventoryPanel extends JPanel {
     }
 
     private void openProductInfoDialog(int productId) {
+        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this); // ✅ Get parent frame
+
         JFrame productFrame = new JFrame("Product Details");
         productFrame.setSize(510, 500);
         productFrame.setLocationRelativeTo(null);
         productFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        productFrame.add(new ProductInfoPanel(productId));
+
+        // ✅ Pass parentFrame and productId to ProductInfoPanel
+        productFrame.add(new ProductInfoPanel(parentFrame, productId));
+
         productFrame.setVisible(true);
     }
+
 
     private void filterInventory() {
         String selected = (String) filterDropdown.getSelectedItem();
@@ -119,7 +125,6 @@ public class InventoryPanel extends JPanel {
             }
         }.execute();
     }
-
 
     void loadInventoryWithProgress() {
         progressBar.setVisible(true);
