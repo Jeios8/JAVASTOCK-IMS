@@ -5,7 +5,6 @@ import main.java.com.javastock.viewmodel.InventoryVM;
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
-import org.jdatepicker.impl.SqlDateModel;
 import javax.swing.*;
 import java.awt.*;
 import java.text.ParseException;

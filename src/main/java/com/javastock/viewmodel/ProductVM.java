@@ -1,5 +1,6 @@
 package main.java.com.javastock.viewmodel;
 
+import main.java.com.javastock.model.Inventory;
 import main.java.com.javastock.utils.DatabaseConnector;
 import java.sql.*;
 import java.util.ArrayList;
@@ -124,7 +125,7 @@ public class ProductVM {
     public Object[][] getStockLocations() {
         List<Object[]> stockData = new ArrayList<>();
         String query = """
-        SELECT w.warehouse_name, i.quantity 
+        SELECT i.warehouse_id, w.warehouse_name, i.quantity 
         FROM inventory i
         JOIN warehouses w ON i.warehouse_id = w.warehouse_id
         WHERE i.product_id = ?
@@ -136,18 +137,22 @@ public class ProductVM {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                stockData.add(new Object[]{rs.getString("warehouse_name"), rs.getInt("quantity")});
+                stockData.add(new Object[]{
+                        rs.getInt("warehouse_id"),
+                        rs.getString("warehouse_name"),
+                        rs.getInt("quantity")
+                });
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return stockData.toArray(new Object[0][2]);
+        return stockData.toArray(new Object[0][3]);
     }
 
-    public boolean updateProduct(String name, double price, int quantity, int threshold) {
+    public boolean updateProduct(String name, double price, int threshold, List<Inventory> updatedStock) {
         String updateProductQuery = "UPDATE products SET product_name = ?, unit_price = ?, reorder_level = ? WHERE product_id = ?";
-        String updateInventoryQuery = "UPDATE inventory SET quantity = ? WHERE product_id = ?";
+        String updateInventoryQuery = "UPDATE inventory SET quantity = ? WHERE product_id = ? AND warehouse_id = ?";
 
         try (Connection conn = DatabaseConnector.getConnection()) {
             conn.setAutoCommit(false); // ✅ Start transaction
@@ -163,11 +168,13 @@ public class ProductVM {
 
             // ✅ Update the `inventory` table
             try (PreparedStatement stmt = conn.prepareStatement(updateInventoryQuery)) {
-                stmt.setInt(1, quantity);
-                stmt.setInt(2, productId);
-                stmt.executeUpdate();
+                for (Inventory inventory : updatedStock) {
+                    stmt.setInt(1, inventory.getQuantity());
+                    stmt.setInt(2, productId);
+                    stmt.setInt(3, inventory.getWarehouseId());
+                    stmt.executeUpdate();
+                }
             }
-
             conn.commit(); // ✅ Commit transaction if successful
             return true;
         } catch (SQLException e) {

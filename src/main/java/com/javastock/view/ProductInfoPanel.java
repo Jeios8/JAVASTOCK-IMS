@@ -1,11 +1,14 @@
 package main.java.com.javastock.view;
 
+import main.java.com.javastock.model.Inventory;
 import main.java.com.javastock.viewmodel.ProductVM;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.List;
+import java.util.ArrayList;
 
 public class ProductInfoPanel extends JPanel {
     private final ProductVM productVM;
@@ -28,24 +31,24 @@ public class ProductInfoPanel extends JPanel {
         setLayout(new BorderLayout(20, 20));
         setBorder(new EmptyBorder(20, 20, 20, 20)); // Padding
 
-        // ✅ Initialize Fields
+        // Initialize Fields
         initializeFields();
 
-        // ✅ Buttons Panel (Anchored to the Top Right)
+        // Buttons Panel (Anchored to the Top Right)
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         editSaveButton = new JButton("Edit");
         JButton downloadButton = new JButton("Download");
         buttonPanel.add(editSaveButton);
         buttonPanel.add(downloadButton);
 
-        // ✅ Tabs
+        // Tabs
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Overview", createOverviewPanel());
         tabbedPane.addTab("Purchases", new JPanel()); // Placeholder
         tabbedPane.addTab("Adjustments", new JPanel()); // Placeholder
         tabbedPane.addTab("History", new JPanel()); // Placeholder
 
-        // ✅ Main Panel (Contains Tabs & Buttons)
+        // Main Panel (Contains Tabs & Buttons)
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.add(buttonPanel, BorderLayout.NORTH);
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
@@ -53,14 +56,14 @@ public class ProductInfoPanel extends JPanel {
         add(mainPanel, BorderLayout.NORTH);
         add(createStockLocationsPanel(), BorderLayout.CENTER);
 
-        // ✅ Add Action Listener for Edit Button
+        // Add Action Listener for Edit Button
         editSaveButton.addActionListener(e -> toggleEditSaveMode());
 
-        // ✅ Load Data Asynchronously
+        // Load Data Asynchronously
         loadProductDataAsync();
     }
 
-    // ✅ Initialize UI Fields
+    // Initialize UI Fields
     private void initializeFields() {
         productIdLabel = new JLabel("Loading...");
         productNameField = createEditableTextField("Loading...");
@@ -80,7 +83,7 @@ public class ProductInfoPanel extends JPanel {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
 
-        // ✅ Left Panel - Product & Stock Summary Details
+        // Left Panel - Product & Stock Summary Details
         JPanel leftPanel = new JPanel(new GridBagLayout());
         leftPanel.setBorder(BorderFactory.createTitledBorder("Primary Details"));
 
@@ -90,7 +93,7 @@ public class ProductInfoPanel extends JPanel {
         leftGbc.gridx = 0;
         leftGbc.gridy = 0;
 
-        // ✅ Product Information
+        // Product Information
         leftPanel.add(new JLabel("Product ID:"), leftGbc);
         leftGbc.gridx = 1;
         productIdLabel = new JLabel("Loading...");
@@ -122,7 +125,7 @@ public class ProductInfoPanel extends JPanel {
 
         leftGbc.gridx = 0;
         leftGbc.gridy++;
-        leftPanel.add(new JLabel(" Total Quantity:"), leftGbc);
+        leftPanel.add(new JLabel("Total Quantity:"), leftGbc);
         leftGbc.gridx = 1;
         leftPanel.add(quantityField, leftGbc);
 
@@ -138,7 +141,7 @@ public class ProductInfoPanel extends JPanel {
         leftGbc.gridx = 1;
         leftPanel.add(itemStatusField, leftGbc);
 
-        // ✅ Right Panel - Product Image Only
+        // Right Panel - Product Image Only
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.setBorder(BorderFactory.createTitledBorder("Product Image"));
 
@@ -159,10 +162,10 @@ public class ProductInfoPanel extends JPanel {
             productImageLabel.setHorizontalAlignment(JLabel.CENTER);
         }
 
-        // ✅ Add Image Label to Panel
+        // Add Image Label to Panel
         rightPanel.add(productImageLabel, BorderLayout.CENTER);
 
-        // ✅ Add Left and Right Panels to Overview Panel
+        // Add Left and Right Panels to Overview Panel
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0.4; // Left Panel takes 70% width
@@ -180,8 +183,8 @@ public class ProductInfoPanel extends JPanel {
         JPanel stockLocationsPanel = new JPanel(new BorderLayout(10, 10));
         stockLocationsPanel.setBorder(BorderFactory.createTitledBorder("Stock Locations"));
 
-        String[] columnNames = {"Store Name", "Stock in Hand"};
-        stockData = new Object[][]{{"Loading...", "Loading..."}};
+        String[] columnNames = {"Warehouse ID", "Warehouse Name", "Stock in Hand"};
+        stockData = new Object[][]{{"Loading...", "Loading...", "Loading..."}};
 
         stockLocationsTable = new JTable(stockData, columnNames);
         JScrollPane scrollPane = new JScrollPane(stockLocationsTable);
@@ -190,14 +193,14 @@ public class ProductInfoPanel extends JPanel {
         return stockLocationsPanel;
     }
 
-    // ✅ Toggle Edit & Save Mode
+    // Toggle Edit & Save Mode
     private void toggleEditSaveMode() {
         isEditing = !isEditing;
         boolean editable = isEditing;
 
         productNameField.setEditable(editable);
         buyingPriceField.setEditable(editable);
-        quantityField.setEditable(editable);
+//        quantityField.setEditable(editable);
         thresholdField.setEditable(editable);
 
         editSaveButton.setText(isEditing ? "Save" : "Edit");
@@ -207,7 +210,7 @@ public class ProductInfoPanel extends JPanel {
         }
     }
 
-    // ✅ Save Updated Product Information
+    // Save Updated Product Information
     private void saveProductChanges() {
         String newName = productNameField.getText();
         double newPrice;
@@ -215,20 +218,45 @@ public class ProductInfoPanel extends JPanel {
 
         try {
             newPrice = Double.parseDouble(buyingPriceField.getText());
-            newQuantity = Integer.parseInt(quantityField.getText());
+//            newQuantity = Integer.parseInt(quantityField.getText());
             newThreshold = Integer.parseInt(thresholdField.getText());
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Invalid input! Please enter valid numbers.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        boolean success = productVM.updateProduct(newName, newPrice, newQuantity, newThreshold);
-        JOptionPane.showMessageDialog(this, success ? "Product updated successfully!" : "Failed to update product.",
-                success ? "Success" : "Error",
-                success ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
+        // Get updated stock data from the table
+        DefaultTableModel model = (DefaultTableModel) stockLocationsTable.getModel();
+        List<Inventory> updatedStock = new ArrayList<>();
+
+        for (int i = 0; i < model.getRowCount(); i++) {
+            int warehouseId = Integer.parseInt(model.getValueAt(i, 0).toString());
+            int updatedStockInHand;
+
+            try {
+                updatedStockInHand = Integer.parseInt(model.getValueAt(i, 2).toString());
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Invalid stock quantity for Warehouse ID: " + warehouseId, "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            Inventory inventory = new Inventory();
+            inventory.setWarehouseId(warehouseId);
+            inventory.setProductId(productVM.getProductId());
+            inventory.setQuantity(updatedStockInHand);
+            updatedStock.add(inventory);
+        }
+
+        boolean success = productVM.updateProduct(newName, newPrice, newThreshold, updatedStock);
+        if (success) {
+            JOptionPane.showMessageDialog(this, "Product updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            SwingUtilities.getWindowAncestor(this).dispose();
+        } else {
+            JOptionPane.showMessageDialog(this, "Failed to update product.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
-    // ✅ Load Product Data Asynchronously
+    // Load Product Data Asynchronously
     void loadProductDataAsync() {
         new SwingWorker<Void, Void>() {
             private String productName, category, supplier, itemStatus;
@@ -276,7 +304,7 @@ public class ProductInfoPanel extends JPanel {
                     quantityField.setText("" + quantity);
                     thresholdField.setText(String.valueOf(threshold));
                     itemStatusField.setText(String.valueOf(itemStatus));
-                    String[] columnNames = {"Store Name", "Stock in Hand"};
+                    String[] columnNames = {"Warehouse ID", "Warehouse Name", "Stock in Hand"};
 
                     // Construct a DefaultTableModel using data and column names
                     DefaultTableModel model = new DefaultTableModel(stockData, columnNames);
@@ -286,13 +314,14 @@ public class ProductInfoPanel extends JPanel {
         }.execute();
     }
 
-    // ✅ Helper Method for Editable Text Fields
+    // Helper Method for Editable Text Fields
     private JTextField createEditableTextField(String text) {
         JTextField field = new JTextField(text);
         field.setEditable(false);
         field.setColumns(15); // Ensures consistent width
         return field;
     }
+
     private Image getScaledImage(Image srcImg, int maxWidth, int maxHeight) {
         int originalWidth = srcImg.getWidth(null);
         int originalHeight = srcImg.getHeight(null);
