@@ -28,7 +28,7 @@ public class LoginUI {
 
         loginFrame = new JFrame("JAVASTOCK");
         loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        loginFrame.setSize(450, 600);
+        loginFrame.setSize(430, 620);
         loginFrame.setLocationRelativeTo(null);
         loginFrame.setResizable(false);
 
@@ -84,7 +84,7 @@ public class LoginUI {
     }
 
     private JPanel createInputPanel() {
-        JPanel inputPanel = new JPanel(new GridLayout(7, 1, 0, 0));
+        JPanel inputPanel = new JPanel(new GridLayout(7, 1, 10, 5));
         inputPanel.setBackground(BACKGROUND_COLOR);
 
         JLabel usernameLabel = createLabel("Username");
@@ -221,8 +221,9 @@ public class LoginUI {
     private JDialog createLoadingDialog() {
         JDialog loadingDialog = new JDialog(loginFrame, "Loading", true);
         loadingDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-        loadingDialog.setSize(200, 150);
+        loadingDialog.setSize(200, 200);
         loadingDialog.setLocationRelativeTo(loginFrame);
+        loadingDialog.setBackground(BACKGROUND_COLOR);
 
         ImageIcon loadingIcon = new ImageIcon(getClass().getResource("/loading.gif"));
         JLabel loadingLabel = new JLabel("Loading, please wait...", loadingIcon, SwingConstants.CENTER);

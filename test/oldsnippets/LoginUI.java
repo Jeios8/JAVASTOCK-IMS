@@ -139,7 +139,7 @@ public class LoginUI {
             loadingDialog.setLocationRelativeTo(loginFrame);
 
             // Load the animated GIF
-            ImageIcon loadingIcon = new ImageIcon(getClass().getResource("/loading.gif"));
+            ImageIcon loadingIcon = new ImageIcon(getClass().getResource("/old_loading.gif"));
             JLabel loadingLabel = new JLabel("Validating, please wait...", loadingIcon, SwingConstants.CENTER);
             loadingLabel.setHorizontalTextPosition(SwingConstants.CENTER);
             loadingLabel.setVerticalTextPosition(SwingConstants.BOTTOM);
