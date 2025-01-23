@@ -6,6 +6,7 @@ import main.java.com.javastock.viewmodel.InventoryVM;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -15,6 +16,7 @@ public class InventoryPanel extends JPanel {
     private JComboBox<String> filterDropdown;
     private JProgressBar progressBar;
     private InventoryVM viewModel;
+    private static final Color BUTTON_COLOR = new Color(153, 204, 255);
 
     public InventoryPanel(InventoryVM viewModel) {
         this.viewModel = viewModel;
@@ -68,9 +70,9 @@ public class InventoryPanel extends JPanel {
             });
 
             // Buttons & Filter
-            refreshButton = new JButton("🔄 Refresh");
-            addButton = new JButton("📦 Add Product");
-            downloadButton = new JButton("📜 Save Report");
+            JButton refreshButton = createButton("Refresh", BUTTON_COLOR);
+            JButton addButton = createButton("📦 Add Product", BUTTON_COLOR);
+            JButton downloadButton = createButton("📜 Save Report", BUTTON_COLOR);
             filterDropdown = new JComboBox<>(new String[]{"All", "In-stock", "Low stock", "Out of stock"});
 
             JPanel topPanel = new JPanel(new BorderLayout());
@@ -193,4 +195,67 @@ public class InventoryPanel extends JPanel {
         return padding;
     }
 
+    private JButton createButton(String text, Color color) {
+        main.java.com.javastock.view.Button button = new main.java.com.javastock.view.Button(text, color);
+        button.setFont(new Font("Helvetica", Font.BOLD,12));
+        button.setBackground(color);
+        button.setForeground(Color.DARK_GRAY);
+        return button;
+    }
+
+    class Button extends JButton { // Rounded Buttons
+        private Color normalColor;
+        private Color hoverColor;
+        private Color clickColor;
+
+        public Button(String text, Color color) {
+            super(text);
+            setBackground(color);
+            normalColor = color;
+            hoverColor = color.brighter();
+            clickColor = color.darker();
+
+            setContentAreaFilled(false);
+            setBorderPainted(false);
+            setFocusPainted(false);
+            setOpaque(false);
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+            addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
+                public void mouseEntered(java.awt.event.MouseEvent evt) {
+                    setBackground(hoverColor);
+                    repaint();
+                }
+
+                @Override
+                public void mouseExited(java.awt.event.MouseEvent evt) {
+                    setBackground(normalColor);
+                    repaint();
+                }
+
+                @Override
+                public void mousePressed(java.awt.event.MouseEvent evt) {
+                    setBackground(clickColor);
+                    repaint();
+                }
+
+                @Override
+                public void mouseReleased(java.awt.event.MouseEvent evt) {
+                    setBackground(hoverColor);
+                    repaint();
+                }
+            });
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(getBackground());
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
 }

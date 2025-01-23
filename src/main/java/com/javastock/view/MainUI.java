@@ -16,6 +16,7 @@ public class MainUI {
     private MainVM viewModel;
     private JPanel contentPanel;
     private CardLayout cardLayout;
+    private static final Color BUTTON_COLOR = new Color(153, 204, 255);
 
     // Map of dynamic panels keyed by their section names
     private Map<String, JPanel> dynamicPanels = new HashMap<>();
@@ -326,12 +327,73 @@ public class MainUI {
             JTextField searchField = new JTextField("Search product, supplier, order", 20);
             searchField.setFont(new Font("Helvetica", Font.PLAIN, 15));
 
-            JButton searchButton = new JButton("Search");
-            searchButton.setBackground(new Color(150, 200, 230));
-            searchButton.setFocusPainted(false);
+            JButton searchButton = createButton("Search", BUTTON_COLOR);
 
             add(searchField, BorderLayout.CENTER);
             add(searchButton, BorderLayout.EAST);
+        }
+    }
+    private JButton createButton(String text, Color color) {
+        main.java.com.javastock.view.Button button = new main.java.com.javastock.view.Button(text, color);
+        button.setFont(new Font("Helvetica", Font.BOLD,12));
+        button.setBackground(color);
+        button.setForeground(Color.DARK_GRAY);
+        return button;
+    }
+
+    class Button extends JButton { // Rounded Buttons
+        private Color normalColor;
+        private Color hoverColor;
+        private Color clickColor;
+
+        public Button(String text, Color color) {
+            super(text);
+            setBackground(color);
+            normalColor = color;
+            hoverColor = color.brighter();
+            clickColor = color.darker();
+
+            setContentAreaFilled(false);
+            setBorderPainted(false);
+            setFocusPainted(false);
+            setOpaque(false);
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+            addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
+                public void mouseEntered(java.awt.event.MouseEvent evt) {
+                    setBackground(hoverColor);
+                    repaint();
+                }
+
+                @Override
+                public void mouseExited(java.awt.event.MouseEvent evt) {
+                    setBackground(normalColor);
+                    repaint();
+                }
+
+                @Override
+                public void mousePressed(java.awt.event.MouseEvent evt) {
+                    setBackground(clickColor);
+                    repaint();
+                }
+
+                @Override
+                public void mouseReleased(java.awt.event.MouseEvent evt) {
+                    setBackground(hoverColor);
+                    repaint();
+                }
+            });
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(getBackground());
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+            g2.dispose();
+            super.paintComponent(g);
         }
     }
 }

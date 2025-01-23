@@ -20,21 +20,36 @@ public class OrdersUI extends JPanel {
         add(createPadding(0,20), BorderLayout.SOUTH);
         add(contentPanel(), BorderLayout.CENTER);
     }
+    private JPanel contentPanel() {
+        //Content Panel
+        JPanel contentPanel = new JPanel();
+        contentPanel.setBackground(Color.LIGHT_GRAY);
+        contentPanel.setLayout(new BorderLayout(0,20));
+        contentPanel.add(topPanel(), BorderLayout.NORTH);
+        contentPanel.add(tablePanel(), BorderLayout.CENTER);
+        return contentPanel;
+    }
+    private JPanel topPanel(){
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        topPanel.setPreferredSize(new Dimension(500,100));
+        topPanel.setBackground(Color.WHITE);
+
+        return topPanel;
+    }
+    private JPanel tablePanel(){
+        JPanel tablePanel = new JPanel();
+        tablePanel.setBackground(Color.WHITE);
+        tablePanel.add(new JLabel("SET ORDER TABLE HERE"));
+
+        // PUT TABLE HERE
+
+        return tablePanel;
+    }
     private JPanel createPadding(int width, int height) {
         JPanel padding = new JPanel();
         padding.setBackground(Color.LIGHT_GRAY);
         padding.setPreferredSize(new Dimension(width, height));
         return padding;
-    }
-    private JPanel contentPanel() {
-        //Content Panel
-        JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-        JLabel titleLabel = new JLabel("Orders");
-        titleLabel.setFont(TITLE_FONT);
-
-        contentPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        contentPanel.add(titleLabel);
-        return contentPanel;
     }
 }
