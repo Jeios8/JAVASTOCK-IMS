@@ -58,6 +58,9 @@ public class InventoryPanel extends JPanel {
                                 productFrame.setLocationRelativeTo(null);
                                 productFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
+                                ImageIcon img = new ImageIcon("src/main/resources/icons/icon_app.png");
+                                productFrame.setIconImage(img.getImage());
+
                                 ProductInfoPanel productInfoPanel = new ProductInfoPanel(parentFrame, productId);
                                 productFrame.add(productInfoPanel);
                                 productFrame.setVisible(true);

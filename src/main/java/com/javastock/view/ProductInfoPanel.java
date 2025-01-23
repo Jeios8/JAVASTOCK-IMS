@@ -200,12 +200,12 @@ public class ProductInfoPanel extends JPanel {
 
         productNameField.setEditable(editable);
         buyingPriceField.setEditable(editable);
-//        quantityField.setEditable(editable);
         thresholdField.setEditable(editable);
 
         editSaveButton.setText(isEditing ? "Save" : "Edit");
 
         if (!isEditing) {
+
             saveProductChanges();
         }
     }
@@ -214,11 +214,10 @@ public class ProductInfoPanel extends JPanel {
     private void saveProductChanges() {
         String newName = productNameField.getText();
         double newPrice;
-        int newQuantity, newThreshold;
+        int newThreshold;
 
         try {
             newPrice = Double.parseDouble(buyingPriceField.getText());
-//            newQuantity = Integer.parseInt(quantityField.getText());
             newThreshold = Integer.parseInt(thresholdField.getText());
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Invalid input! Please enter valid numbers.", "Error", JOptionPane.ERROR_MESSAGE);

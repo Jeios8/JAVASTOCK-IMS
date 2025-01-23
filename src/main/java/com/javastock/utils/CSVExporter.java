@@ -1,5 +1,7 @@
 package main.java.com.javastock.utils;
 
+import main.java.com.javastock.view.InventoryPanel;
+
 import javax.swing.*;
 import java.io.File;
 import java.io.FileWriter;

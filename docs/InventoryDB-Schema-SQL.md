@@ -71,7 +71,7 @@ CREATE TABLE products (
     image_path VARCHAR(255),
     is_active BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL,
-    FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id) ON DELETE SET NULL
+    FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id) ON DELE TE SET NULL
 );
 CREATE INDEX idx_product_name ON products(product_name);
 CREATE INDEX idx_product_category_supplier ON products(category_id, supplier_id);

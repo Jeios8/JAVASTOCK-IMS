@@ -168,6 +168,9 @@ public class MainUI {
             this.viewModel = viewModel;
             this.mainFrame = mainFrame;
 
+            ImageIcon img = new ImageIcon("src/main/resources/icons/icon_app.png");
+            mainFrame.setIconImage(img.getImage());
+
             setBackground(Color.WHITE);
             setPreferredSize(new Dimension(250, 720));
             setLayout(new BorderLayout());

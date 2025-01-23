@@ -1,6 +1,5 @@
 package main.java.com.javastock.view;
 
-import main.java.com.javastock.utils.DataPreloader;
 import main.java.com.javastock.viewmodel.LoginVM;
 import main.java.com.javastock.viewmodel.MainVM;
 
@@ -9,8 +8,6 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
-import java.util.Map;
 
 public class LoginUI {
     private final JFrame loginFrame;
@@ -34,6 +31,9 @@ public class LoginUI {
         loginFrame.setSize(450, 600);
         loginFrame.setLocationRelativeTo(null);
         loginFrame.setResizable(false);
+
+        ImageIcon img = new ImageIcon("src/main/resources/icons/icon_app.png");
+        loginFrame.setIconImage(img.getImage());
 
         // Initialize main layout
         JPanel mainPanel = new JPanel(new BorderLayout(20, 20));

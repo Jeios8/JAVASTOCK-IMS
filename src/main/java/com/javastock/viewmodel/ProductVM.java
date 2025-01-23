@@ -217,7 +217,7 @@ public class ProductVM {
                             rs.getString("category_name"),   // Column 2
                             rs.getString("supplier_name"),   // Column 3
                             rs.getDouble("buying_price"),    // Column 4
-                            rs.getInt("quantity"),           // Column 5
+                            rs.getInt("quantity"),     // Column 5
                             rs.getInt("threshold"),          // Column 6
                             rs.getBoolean("item_status")     // Column 7
                     });

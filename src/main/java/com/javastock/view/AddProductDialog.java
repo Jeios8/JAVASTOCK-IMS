@@ -26,6 +26,9 @@ public class AddProductDialog extends JDialog {
         setLocationRelativeTo(parent);
         setResizable(false);
 
+        ImageIcon img = new ImageIcon("src/main/resources/icons/icon_app.png");
+        setIconImage(img.getImage());
+
         // **Main Panel**
         JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
