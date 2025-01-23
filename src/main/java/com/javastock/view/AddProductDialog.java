@@ -2,20 +2,28 @@ package main.java.com.javastock.view;
 
 import main.java.com.javastock.utils.DataPreloader;
 import main.java.com.javastock.viewmodel.InventoryVM;
+import org.jdatepicker.impl.JDatePanelImpl;
+import org.jdatepicker.impl.JDatePickerImpl;
+import org.jdatepicker.impl.UtilDateModel;
+import org.jdatepicker.impl.SqlDateModel;
 import javax.swing.*;
 import java.awt.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Properties;
 
 public class AddProductDialog extends JDialog {
     private JTextField nameField, unitPriceField, quantityField, reorderLevelField;
     private JComboBox<String> categoryDropdown, supplierDropdown, warehouseDropdown;
     private JButton addButton, cancelButton;
     private InventoryVM viewModel;
+    private JDatePickerImpl expirationDatePicker;
 
     public AddProductDialog(JFrame parent, InventoryVM viewModel) {
         super(parent, "Add Product", true);
         this.viewModel = viewModel;
         setLayout(new BorderLayout());
-        setSize(420, 600);
+        setSize(420, 420);
         setLocationRelativeTo(parent);
         setResizable(false);
 
@@ -59,6 +67,12 @@ public class AddProductDialog extends JDialog {
 
         mainPanel.add(new JLabel("Quantity:"), gbc);
         mainPanel.add(quantityField, inputGbc);
+        gbc.gridy++;
+        inputGbc.gridy++;
+
+        expirationDatePicker = createDatePicker();
+        mainPanel.add(new JLabel("Expiration Date:"), gbc);
+        mainPanel.add(expirationDatePicker, inputGbc);
         gbc.gridy++;
         inputGbc.gridy++;
 
@@ -210,10 +224,18 @@ public class AddProductDialog extends JDialog {
     }
 
     private void addProduct() {
+        java.util.Date selectedDate = (java.util.Date) expirationDatePicker.getModel().getValue();
+        String expirationDate = selectedDate != null ? new SimpleDateFormat("yyyy-MM-dd").format(selectedDate) : "N/A";
+
         boolean success = viewModel.validateAndAddProduct(
-                nameField.getText(), unitPriceField.getText(), quantityField.getText(), reorderLevelField.getText(),
-                (String) categoryDropdown.getSelectedItem(), (String) supplierDropdown.getSelectedItem(),
-                (String) warehouseDropdown.getSelectedItem()
+                nameField.getText(),
+                unitPriceField.getText(),
+                quantityField.getText(),
+                reorderLevelField.getText(),
+                (String) categoryDropdown.getSelectedItem(),
+                (String) supplierDropdown.getSelectedItem(),
+                (String) warehouseDropdown.getSelectedItem(),
+                expirationDate // Pass expiration date
         );
 
         if (success) {
@@ -221,6 +243,39 @@ public class AddProductDialog extends JDialog {
             dispose();
         } else {
             JOptionPane.showMessageDialog(this, "Invalid input or failed to add product.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
+    private JDatePickerImpl createDatePicker() {
+        UtilDateModel model = new UtilDateModel();
+        JDatePanelImpl datePanel = new JDatePanelImpl(model, getDateProperties());
+        JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
+        datePicker.setPreferredSize(new Dimension(200, 30));
+        return datePicker;
+    }
+
+    private Properties getDateProperties() {
+        Properties p = new Properties();
+        p.put("text.today", "Today");
+        p.put("text.month", "Month");
+        p.put("text.year", "Year");
+        return p;
+    }
+    class DateLabelFormatter extends JFormattedTextField.AbstractFormatter {
+        private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        @Override
+        public Object stringToValue(String text) throws ParseException {
+            return dateFormat.parse(text);
+        }
+
+        @Override
+        public String valueToString(Object value) {
+            if (value != null) {
+                return dateFormat.format(((java.util.Calendar) value).getTime());
+            }
+            return "";
         }
     }
 }

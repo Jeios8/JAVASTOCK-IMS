@@ -239,7 +239,7 @@ public class MainUI {
                 // For sections that map to dynamic panels
                 if (section.equals("Inventory")) {
                     addPanelIfNeeded("Inventory");
-                    ((InventoryPanel) dynamicPanels.get("Inventory")).loadInventoryWithProgress();
+                    // ((InventoryPanel) dynamicPanels.get("Inventory")).loadInventoryWithProgress();
                 }
                 else if (section.equals("Dashboard")) {
                     addPanelIfNeeded("Dashboard");

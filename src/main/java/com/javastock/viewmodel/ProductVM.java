@@ -175,4 +175,52 @@ public class ProductVM {
             return false;
         }
     }
+
+    public Object[][] getProductDetails() {
+        List<Object[]> data = new ArrayList<>();
+        String query = """
+        SELECT
+            p.product_name,
+            c.category_name,
+            s.supplier_name,
+            p.unit_price AS buying_price,
+            inv.total_quantity AS quantity,
+            p.reorder_level AS threshold,
+            p.is_active AS item_status
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.category_id
+        LEFT JOIN suppliers s ON p.supplier_id = s.supplier_id
+        LEFT JOIN (
+            SELECT product_id, SUM(quantity) AS total_quantity
+            FROM inventory
+            GROUP BY product_id
+        ) inv ON p.product_id = inv.product_id
+        WHERE p.product_id = ?
+    """;
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, productId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    data.add(new Object[] {
+                            rs.getString("product_name"),    // Column 1
+                            rs.getString("category_name"),   // Column 2
+                            rs.getString("supplier_name"),   // Column 3
+                            rs.getDouble("buying_price"),    // Column 4
+                            rs.getInt("quantity"),           // Column 5
+                            rs.getInt("threshold"),          // Column 6
+                            rs.getBoolean("item_status")     // Column 7
+                    });
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // The array now has 7 columns per row (instead of 9).
+        return data.toArray(new Object[0][7]);
+    }
 }

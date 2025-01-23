@@ -4,12 +4,15 @@ import main.java.com.javastock.viewmodel.ProductVM;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 public class ProductInfoPanel extends JPanel {
     private final ProductVM productVM;
     private final JFrame parentFrame;
     private final int productId;
+    private Object[][] stockData;
+    private JTable stockLocationsTable;
 
     // Editable fields
     private JTextField productNameField, buyingPriceField, categoryField, supplierField, quantityField, thresholdField, itemStatusField;
@@ -119,23 +122,9 @@ public class ProductInfoPanel extends JPanel {
 
         leftGbc.gridx = 0;
         leftGbc.gridy++;
-        leftPanel.add(new JLabel("Quantity:"), leftGbc);
+        leftPanel.add(new JLabel(" Total Quantity:"), leftGbc);
         leftGbc.gridx = 1;
         leftPanel.add(quantityField, leftGbc);
-
-//        leftGbc.gridx = 0;
-//        leftGbc.gridy++;
-//        leftPanel.add(new JLabel("Stock On Hand:"), leftGbc);
-//        leftGbc.gridx = 1;
-//        stockOnHandLabel = new JLabel("Loading...");
-//        leftPanel.add(stockOnHandLabel, leftGbc);
-//
-//        leftGbc.gridx = 0;
-//        leftGbc.gridy++;
-//        leftPanel.add(new JLabel("On the Way:"), leftGbc);
-//        leftGbc.gridx = 1;
-//        onTheWayStockLabel = new JLabel("Loading...");
-//        leftPanel.add(onTheWayStockLabel, leftGbc);
 
         leftGbc.gridx = 0;
         leftGbc.gridy++;
@@ -158,7 +147,7 @@ public class ProductInfoPanel extends JPanel {
         productImageLabel.setHorizontalAlignment(JLabel.CENTER);
         productImageLabel.setPreferredSize(new Dimension(150, 150));
 
-        // ✅ Load and Scale Image to Fit with Aspect Ratio
+        // Load and Scale Image to Fit with Aspect Ratio
         String imagePath = "src\\main\\resources\\img\\no-image-available.jpg"; // Replace with actual path
         ImageIcon originalIcon = new ImageIcon(imagePath);
 
@@ -172,13 +161,6 @@ public class ProductInfoPanel extends JPanel {
 
         // ✅ Add Image Label to Panel
         rightPanel.add(productImageLabel, BorderLayout.CENTER);
-
-//        JLabel productImageLabel = new JLabel();
-//        productImageLabel.setBorder(BorderFactory.createDashedBorder(Color.GRAY));
-//        productImageLabel.setHorizontalAlignment(JLabel.CENTER);
-//        productImageLabel.setPreferredSize(new Dimension(150, 150));
-//        productImageLabel.setIcon(new ImageIcon("src\\main\\resources\\img\\no-image-available.jpg")); // Placeholder
-//        rightPanel.add(productImageLabel, BorderLayout.CENTER);
 
         // ✅ Add Left and Right Panels to Overview Panel
         gbc.gridx = 0;
@@ -199,9 +181,9 @@ public class ProductInfoPanel extends JPanel {
         stockLocationsPanel.setBorder(BorderFactory.createTitledBorder("Stock Locations"));
 
         String[] columnNames = {"Store Name", "Stock in Hand"};
-        Object[][] data = {{"Loading...","Loading..."}};
+        stockData = new Object[][]{{"Loading...", "Loading..."}};
 
-        JTable stockLocationsTable = new JTable(data, columnNames);
+        stockLocationsTable = new JTable(stockData, columnNames);
         JScrollPane scrollPane = new JScrollPane(stockLocationsTable);
         stockLocationsPanel.add(scrollPane, BorderLayout.CENTER);
 
@@ -249,20 +231,37 @@ public class ProductInfoPanel extends JPanel {
     // ✅ Load Product Data Asynchronously
     void loadProductDataAsync() {
         new SwingWorker<Void, Void>() {
-            private String productName, category, supplier;
+            private String productName, category, supplier, itemStatus;
             private double buyingPrice;
             private int quantity, threshold;
-            private boolean itemStatus;
+            Object[][] productDetails;
 
             @Override
             protected Void doInBackground() {
-                productName = productVM.getProductName();
-                category = productVM.getCategory();
-                supplier = productVM.getSupplier();
-                buyingPrice = productVM.getBuyingPrice();
-                quantity = productVM.getQuantity();
-                threshold = productVM.getThreshold();
-                itemStatus = productVM.getItemStatus();
+                productDetails = productVM.getProductDetails();
+                stockData = productVM.getStockLocations();
+
+                for (Object[] row : productDetails) {
+                    System.out.println("Product Name: " + row[0]);
+                    System.out.println("Category: " + row[1]);
+                    System.out.println("Supplier: " + row[2]);
+                    System.out.println("Buying Price: " + row[3]);
+                    System.out.println("Total Quantity: " + row[4]);
+                    System.out.println("Threshold: " + row[5]);
+                    System.out.println("Item Status: " + row[6]);
+
+                    productName = (String) row[0];
+                    category = (String) row[1];
+                    supplier = (String) row[2];
+                    buyingPrice = (double) row[3];
+                    quantity = (int) row[4];
+                    threshold = (int) row[5];
+
+                    boolean is_active = (boolean) row[6];
+                    if (!is_active) itemStatus = "Inactive";
+                    else itemStatus = "Active";
+                }
+
                 return null;
             }
 
@@ -277,6 +276,11 @@ public class ProductInfoPanel extends JPanel {
                     quantityField.setText("" + quantity);
                     thresholdField.setText(String.valueOf(threshold));
                     itemStatusField.setText(String.valueOf(itemStatus));
+                    String[] columnNames = {"Store Name", "Stock in Hand"};
+
+                    // Construct a DefaultTableModel using data and column names
+                    DefaultTableModel model = new DefaultTableModel(stockData, columnNames);
+                    stockLocationsTable.setModel(model);
                 });
             }
         }.execute();

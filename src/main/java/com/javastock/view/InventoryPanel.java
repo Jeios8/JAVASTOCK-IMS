@@ -11,7 +11,7 @@ import java.awt.event.MouseEvent;
 
 public class InventoryPanel extends JPanel {
     private JTable inventoryTable;
-    private JButton addButton, downloadButton;
+    private JButton addButton, downloadButton, refreshButton;
     private JComboBox<String> filterDropdown;
     private JProgressBar progressBar;
     private InventoryVM viewModel;
@@ -29,16 +29,17 @@ public class InventoryPanel extends JPanel {
         private JPanel containerPanel(){
             JPanel containerPanel = new JPanel();
             containerPanel.setLayout(new BorderLayout());
-        // Initialize Table
-        inventoryTable = new JTable(viewModel.getTableModel());
-        JScrollPane scrollPane = new JScrollPane(inventoryTable);
-        inventoryTable.setDefaultRenderer(Object.class, new StockStatusRenderer());
-        inventoryTable.setDefaultEditor(Object.class, null);
+            // Initialize Table
+            inventoryTable = new JTable(viewModel.getTableModel());
+            JScrollPane scrollPane = new JScrollPane(inventoryTable);
+            inventoryTable.setDefaultRenderer(Object.class, new StockStatusRenderer());
+            inventoryTable.setDefaultEditor(Object.class, null);
 
             inventoryTable.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     if (e.getClickCount() == 2) { // Detect double-click
+                        System.out.println("Double-click detected on row");
                         int selectedRow = inventoryTable.getSelectedRow();
                         if (selectedRow != -1) {
                             Object productIdObj = inventoryTable.getValueAt(selectedRow, 0);
@@ -58,9 +59,6 @@ public class InventoryPanel extends JPanel {
                                 ProductInfoPanel productInfoPanel = new ProductInfoPanel(parentFrame, productId);
                                 productFrame.add(productInfoPanel);
                                 productFrame.setVisible(true);
-
-                                // ✅ Load product data asynchronously (No Arguments Needed Now)
-                                productInfoPanel.loadProductDataAsync();  // ✅ No argument needed anymore
                             } else {
                                 JOptionPane.showMessageDialog(null, "Error: Product ID is invalid!", "Error", JOptionPane.ERROR_MESSAGE);
                             }
@@ -70,54 +68,58 @@ public class InventoryPanel extends JPanel {
             });
 
             // Buttons & Filter
-        addButton = new JButton("Add Product");
-        downloadButton = new JButton("Export CSV");
-        filterDropdown = new JComboBox<>(new String[]{"All", "In-stock", "Low stock", "Out of stock"});
+            refreshButton = new JButton("🔄 Refresh");
+            addButton = new JButton("📦 Add Product");
+            downloadButton = new JButton("📜 Save Report");
+            filterDropdown = new JComboBox<>(new String[]{"All", "In-stock", "Low stock", "Out of stock"});
 
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        topPanel.add(filterDropdown);
-        topPanel.add(addButton);
-        topPanel.add(downloadButton);
+            JPanel topPanel = new JPanel(new BorderLayout());
 
-        progressBar = new JProgressBar();
-        progressBar.setIndeterminate(true);
-        progressBar.setStringPainted(true);
-        progressBar.setString("Loading...");
-        progressBar.setVisible(false);
+            JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));  // Left side
+            JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT)); // Right side
 
-        containerPanel.add(topPanel, BorderLayout.NORTH);
-        containerPanel.add(scrollPane, BorderLayout.CENTER);
-        containerPanel.add(progressBar, BorderLayout.SOUTH);
+            // Add refresh button to left panel
+            leftPanel.add(refreshButton);
 
-        addButton.addActionListener(e -> new AddProductDialog((JFrame) SwingUtilities.getWindowAncestor(this), viewModel));
-        downloadButton.addActionListener(e -> CSVExporter.exportToCSV(inventoryTable));
-        filterDropdown.addActionListener(e -> filterInventory());
+            // Add other buttons to right panel
+            rightPanel.add(filterDropdown);
+            rightPanel.add(addButton);
+            rightPanel.add(downloadButton);
 
-        viewModel.setOnDataLoaded(() -> {
-            SwingUtilities.invokeLater(() -> {
-                inventoryTable.setModel(viewModel.getTableModel());
-                progressBar.setVisible(false);
+            // Add both panels to the topPanel
+            topPanel.add(leftPanel, BorderLayout.WEST);
+            topPanel.add(rightPanel, BorderLayout.EAST);
+
+            progressBar = new JProgressBar();
+            progressBar.setIndeterminate(true);
+            progressBar.setStringPainted(true);
+            progressBar.setString("Loading...");
+            progressBar.setVisible(false);
+
+            containerPanel.add(topPanel, BorderLayout.NORTH);
+            containerPanel.add(scrollPane, BorderLayout.CENTER);
+            containerPanel.add(progressBar, BorderLayout.SOUTH);
+
+            refreshButton.addActionListener(e -> refreshInventory());
+            addButton.addActionListener(e -> new AddProductDialog((JFrame) SwingUtilities.getWindowAncestor(this), viewModel));
+            downloadButton.addActionListener(e -> CSVExporter.exportToCSV(inventoryTable));
+            filterDropdown.addActionListener(e -> filterInventory());
+
+            viewModel.setOnDataLoaded(() -> {
+                SwingUtilities.invokeLater(() -> {
+                    inventoryTable.setModel(viewModel.getTableModel());
+                    progressBar.setVisible(false);
+                });
             });
-        });
 
-        loadInventoryWithProgress();
-        return containerPanel;
+            loadInventoryWithProgress();
+            return containerPanel;
+        }
+
+    private void refreshInventory() {
+        progressBar.setVisible(true);
+        SwingUtilities.invokeLater(this::loadInventoryWithProgress);
     }
-
-    private void openProductInfoDialog(int productId) {
-        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this); // ✅ Get parent frame
-
-        JFrame productFrame = new JFrame("Product Details");
-        productFrame.setSize(510, 500);
-        productFrame.setLocationRelativeTo(null);
-        productFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-        // ✅ Pass parentFrame and productId to ProductInfoPanel
-        productFrame.add(new ProductInfoPanel(parentFrame, productId));
-
-        productFrame.setVisible(true);
-    }
-
 
     private void filterInventory() {
         String selected = (String) filterDropdown.getSelectedItem();
@@ -153,22 +155,37 @@ public class InventoryPanel extends JPanel {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            String stockStatus = table.getValueAt(row, table.getColumnModel().getColumnIndex("Availability")).toString();
 
-            if (stockStatus.equalsIgnoreCase("In-stock")) {
-                cell.setBackground(new Color(144, 238, 144));
-            } else if (stockStatus.equalsIgnoreCase("Low stock")) {
-                cell.setBackground(new Color(255, 204, 102));
-            } else if (stockStatus.equalsIgnoreCase("Out of stock")) {
-                cell.setBackground(new Color(255, 102, 102));
+            // ✅ Fix: Check if column exists before using its value
+            int availabilityColumnIndex = table.getColumnModel().getColumnIndex("Availability");
+            if (availabilityColumnIndex == -1 || table.getValueAt(row, availabilityColumnIndex) == null) {
+                cell.setBackground(Color.WHITE); // Default if "Availability" column is missing
+                return cell;
+            }
+
+            String stockStatus = table.getValueAt(row, availabilityColumnIndex).toString();
+
+            // ✅ Fix: Null safety & background color handling
+            if ("In-stock".equalsIgnoreCase(stockStatus)) {
+                cell.setBackground(new Color(212, 237, 188, 255)); // Green
+            } else if ("Low stock".equalsIgnoreCase(stockStatus)) {
+                cell.setBackground(new Color(255, 229, 160, 255)); // Yellow
+            } else if ("Out of stock".equalsIgnoreCase(stockStatus)) {
+                cell.setBackground(new Color(255, 207, 201, 255)); // Red
             } else {
-                cell.setBackground(Color.WHITE);
+                cell.setBackground(Color.WHITE); // Default color
+            }
+
+            // Preserve selection highlight
+            if (isSelected) {
+                cell.setBackground(table.getSelectionBackground());
+                cell.setForeground(table.getSelectionForeground());
             }
 
             return cell;
         }
-
     }
+
     private JPanel createPadding(int width, int height) {
         JPanel padding = new JPanel();
         padding.setBackground(Color.LIGHT_GRAY);

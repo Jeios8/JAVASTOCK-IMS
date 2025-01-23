@@ -1,19 +1,32 @@
 package main.java.com.javastock.model;
 
+
+import java.sql.Date;
+
 public class Inventory {
     private int inventoryId;
     private int productId;
     private int warehouseId;
     private int quantity;
+    private Date expirationDate;
 
-    // Constructors
+    // Default constructor
     public Inventory() {}
 
+    // Constructor for fetching from database (includes inventoryId)
     public Inventory(int inventoryId, int productId, int warehouseId, int quantity) {
         this.inventoryId = inventoryId;
         this.productId = productId;
         this.warehouseId = warehouseId;
         this.quantity = quantity;
+    }
+
+    // Constructor for inserting new inventory (without inventoryId)
+    public Inventory(int productId, int warehouseId, int quantity, Date expirationDate) {
+        this.productId = productId;
+        this.warehouseId = warehouseId;
+        this.quantity = quantity;
+        this.expirationDate = expirationDate;
     }
 
     // Getters and Setters
@@ -47,5 +60,13 @@ public class Inventory {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public Date getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(Date expirationDate) {
+        this.expirationDate = expirationDate;
     }
 }
