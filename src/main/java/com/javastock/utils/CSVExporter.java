@@ -25,11 +25,11 @@ public class CSVExporter {
     public static void exportToCSV(JTable table) {
         // Generate a filename with a timestamp
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String suggestedFilename = "inventory_report_" + timestamp + ".csv";
+        String suggestedFilename = "javastock_report_" + timestamp + ".csv";
 
         // Configure file chooser for saving the CSV
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Save Inventory Report");
+        fileChooser.setDialogTitle("Save Report");
         fileChooser.setFileFilter(new FileNameExtensionFilter("CSV Files (*.csv)", "csv"));
         fileChooser.setSelectedFile(new File(suggestedFilename)); // Suggest a default filename
 
@@ -69,7 +69,7 @@ public class CSVExporter {
             }
 
             // Show a success message to the user
-            JOptionPane.showMessageDialog(null, "Inventory exported successfully to:\n" + filePath);
+            JOptionPane.showMessageDialog(null, "Report exported successfully to:\n" + filePath);
         } catch (IOException e) {
             // Show an error message if something goes wrong
             JOptionPane.showMessageDialog(null, "Error exporting file: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);

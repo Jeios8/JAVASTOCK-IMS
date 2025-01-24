@@ -41,7 +41,7 @@ public class MainUI {
         DashboardUI dashboardUI = new DashboardUI(new DashboardVM());
         InventoryPanel inventoryPanel = new InventoryPanel(new InventoryVM());
         ReportsUI reportsUI = new ReportsUI(new ReportsVM());
-        SupplierUI supplierUI = new SupplierUI(new SupplierVM());
+        SupplierPanel supplierPanel = new SupplierPanel(new SupplierVM());
         OrdersUI ordersUI = new OrdersUI(new OrdersVM());
         WarehousePanel warehousePanel = new WarehousePanel(new WarehouseVM());
 
@@ -49,7 +49,7 @@ public class MainUI {
         dynamicPanels.put("Dashboard", dashboardUI);
         dynamicPanels.put("Inventory", inventoryPanel);
         dynamicPanels.put("Reports", reportsUI);
-        dynamicPanels.put("Suppliers", supplierUI);
+        dynamicPanels.put("Suppliers", supplierPanel);
         dynamicPanels.put("Orders", ordersUI);
         dynamicPanels.put("Manage Store", warehousePanel);
 
