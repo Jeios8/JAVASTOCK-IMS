@@ -48,7 +48,7 @@ public class WarehouseDAO {
     // Insert a new warehouse
     public boolean insertWarehouse(Warehouse warehouse) {
         String query = """
-        INSERT INTO warehouses (warehouse_name, contact_name, phone, email, address, is_active)
+        INSERT INTO warehouses (warehouse_name, contact_name, phone, location, is_active)
         VALUES (?, ?, ?, ?, ?, TRUE)
         """;
 
@@ -58,8 +58,8 @@ public class WarehouseDAO {
             stmt.setString(1, warehouse.getWarehouseName());
             stmt.setString(2, warehouse.getContactName());
             stmt.setString(3, warehouse.getPhone());
-            stmt.setString(4, warehouse.getEmail());
-            stmt.setString(5, warehouse.getAddress());
+          //  stmt.setString(4, warehouse.getEmail());
+            stmt.setString(5, warehouse.getLocation());
 
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
@@ -77,8 +77,8 @@ public class WarehouseDAO {
             warehouse_name = ?, 
             contact_name = ?, 
             phone = ?, 
-            email = ?, 
-            address = ?, 
+         
+            location = ?, 
             is_active = ? 
         WHERE warehouse_id = ?
         """;
@@ -89,8 +89,8 @@ public class WarehouseDAO {
             stmt.setString(1, warehouse.getWarehouseName());
             stmt.setString(2, warehouse.getContactName());
             stmt.setString(3, warehouse.getPhone());
-            stmt.setString(4, warehouse.getEmail());
-            stmt.setString(5, warehouse.getAddress());
+         //   stmt.setString(4, warehouse.getEmail());
+            stmt.setString(5, warehouse.getLocation());
             stmt.setBoolean(6, warehouse.isActive());
             stmt.setInt(7, warehouse.getWarehouseId());
 
@@ -126,8 +126,8 @@ public class WarehouseDAO {
                 rs.getString("warehouse_name"),
                 rs.getString("contact_name"),
                 rs.getString("phone"),
-                rs.getString("email"),
-                rs.getString("address"),
+             //   rs.getString("email"),
+                rs.getString("location"),
                 rs.getBoolean("is_active")
         );
     }

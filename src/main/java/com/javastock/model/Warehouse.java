@@ -5,20 +5,19 @@ public class Warehouse {
     private String warehouseName;
     private String contactName;
     private String phone;
-    private String email;
-    private String address;
+  //  private String email;
+    private String location;
     private boolean isActive;
 
     // Constructors
     public Warehouse() {}
 
-    public Warehouse(int warehouseId, String warehouseName, String contactName, String phone, String email, String address, boolean isActive) {
+    public Warehouse(int warehouseId, String warehouseName, String contactName, String phone, String location, boolean isActive) {
         this.warehouseId = warehouseId;
         this.warehouseName = warehouseName;
         this.contactName = contactName;
         this.phone = phone;
-        this.email = email;
-        this.address = address;
+        this.location = location;
         this.isActive = isActive;
     }
 
@@ -55,20 +54,20 @@ public class Warehouse {
         this.phone = phone;
     }
 
-    public String getEmail() {
-        return email;
+//    public String getEmail() {
+//        return email;
+//    }
+//
+//    public void setEmail(String email) {
+//        this.email = email;
+//    }
+
+    public String getLocation() {
+        return location;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     public boolean isActive() {

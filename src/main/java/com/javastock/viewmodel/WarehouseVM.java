@@ -15,7 +15,7 @@ public class WarehouseVM {
 
     public WarehouseVM() {
         tableModel = new DefaultTableModel(
-                new String[]{"Warehouse ID", "Warehouse Name", "Contact Name", "Phone", "Email", "Address", "Status"},
+                new String[]{"Warehouse ID", "Warehouse Name", "Contact Name", "Phone", "Location", "Status"},
                 0
         );
     }
@@ -50,8 +50,8 @@ public class WarehouseVM {
             warehouse_name, 
             contact_name, 
             phone, 
-            email, 
-            address, 
+            
+            location, 
             CASE 
                 WHEN is_active THEN 'Active'
                 ELSE 'Inactive'
@@ -72,8 +72,8 @@ public class WarehouseVM {
                         rs.getString("warehouse_name"),
                         rs.getString("contact_name"),
                         rs.getString("phone"),
-                        rs.getString("email"),
-                        rs.getString("address"),
+                       // rs.getString("email"),
+                        rs.getString("location"),
                         rs.getString("status")
                 });
             }
@@ -82,14 +82,14 @@ public class WarehouseVM {
         }
     }
 
-    public boolean addWarehouse(String name, String contact, String phone, String email, String address) {
-        if (name.isEmpty() || email.isEmpty()) {
-            System.err.println("❌ Validation Error: Warehouse name and email are required.");
-            return false;
-        }
+    public boolean addWarehouse(String name, String contact, String phone, String location) {
+//        if (name.isEmpty() || email.isEmpty()) {
+//            System.err.println("❌ Validation Error: Warehouse name and email are required.");
+//            return false;
+//        }
 
         String query = """
-        INSERT INTO warehouses (warehouse_name, contact_name, phone, email, address, is_active)
+        INSERT INTO warehouses (warehouse_name, contact_name, phone, location, is_active)
         VALUES (?, ?, ?, ?, ?, TRUE);
         """;
 
@@ -99,8 +99,7 @@ public class WarehouseVM {
             stmt.setString(1, name);
             stmt.setString(2, contact);
             stmt.setString(3, phone);
-            stmt.setString(4, email);
-            stmt.setString(5, address);
+            stmt.setString(4, location);
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
@@ -133,7 +132,7 @@ public class WarehouseVM {
 
     public Object[] getWarehouseDetailsById(int warehouseId) {
         String query = """
-        SELECT warehouse_name, contact_name, phone, email, address, is_active
+        SELECT warehouse_name, contact_name, phone, location, is_active
         FROM warehouses
         WHERE warehouse_id = ?
     """;
@@ -148,8 +147,8 @@ public class WarehouseVM {
                             rs.getString("warehouse_name"),
                             rs.getString("contact_name"),
                             rs.getString("phone"),
-                            rs.getString("email"),
-                            rs.getString("address"),
+                          //  rs.getString("email"),
+                            rs.getString("location"),
                             rs.getBoolean("is_active")
                     };
                 }

@@ -5,7 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class AddWarehouseDialog extends JDialog {
-    private JTextField nameField, contactField, phoneField, emailField, addressField;
+    private JTextField nameField, contactField, phoneField, locationField;
     private JButton addButton, cancelButton;
     private WarehouseVM viewModel;
 
@@ -38,8 +38,8 @@ public class AddWarehouseDialog extends JDialog {
         nameField = createRoundedTextField("Enter warehouse name...");
         contactField = createRoundedTextField("Enter contact name...");
         phoneField = createRoundedTextField("Enter phone number...");
-        emailField = createRoundedTextField("Enter email...");
-        addressField = createRoundedTextField("Enter address...");
+    //    emailField = createRoundedTextField("Enter email...");
+        locationField = createRoundedTextField("Enter location...");
 
         mainPanel.add(new JLabel("Warehouse Name:"), gbc);
         mainPanel.add(nameField, inputGbc);
@@ -53,12 +53,12 @@ public class AddWarehouseDialog extends JDialog {
         mainPanel.add(phoneField, inputGbc);
         gbc.gridy++; inputGbc.gridy++;
 
-        mainPanel.add(new JLabel("Email:"), gbc);
-        mainPanel.add(emailField, inputGbc);
-        gbc.gridy++; inputGbc.gridy++;
+//        mainPanel.add(new JLabel("Email:"), gbc);
+//        mainPanel.add(emailField, inputGbc);
+//        gbc.gridy++; inputGbc.gridy++;
 
-        mainPanel.add(new JLabel("Address:"), gbc);
-        mainPanel.add(addressField, inputGbc);
+        mainPanel.add(new JLabel("Location:"), gbc);
+        mainPanel.add(locationField, inputGbc);
 
         add(mainPanel, BorderLayout.CENTER);
 
@@ -135,8 +135,7 @@ public class AddWarehouseDialog extends JDialog {
                 nameField.getText(),
                 contactField.getText(),
                 phoneField.getText(),
-                emailField.getText(),
-                addressField.getText()
+                locationField.getText()
         );
 
         if (success) {

@@ -11,7 +11,7 @@ public class WarehouseInfoPanel extends JPanel {
     private final JFrame parentFrame;
     private final int warehouseId;
 
-    private JTextField warehouseNameField, contactNameField, phoneField, emailField, addressField, statusField;
+    private JTextField warehouseNameField, contactNameField, phoneField, locationField, statusField;
     private JLabel warehouseIdLabel;
     private JButton editSaveButton;
     private boolean isEditing = false;
@@ -43,8 +43,8 @@ public class WarehouseInfoPanel extends JPanel {
         warehouseNameField = createEditableTextField("Loading...");
         contactNameField = createEditableTextField("Loading...");
         phoneField = createEditableTextField("Loading...");
-        emailField = createEditableTextField("Loading...");
-        addressField = createEditableTextField("Loading...");
+      //  emailField = createEditableTextField("Loading...");
+        locationField = createEditableTextField("Loading...");
         statusField = createEditableTextField("Loading...");
     }
 
@@ -74,15 +74,15 @@ public class WarehouseInfoPanel extends JPanel {
         gbc.gridx = 1;
         panel.add(phoneField, gbc);
 
-        gbc.gridx = 0; gbc.gridy++;
-        panel.add(new JLabel("Email:"), gbc);
-        gbc.gridx = 1;
-        panel.add(emailField, gbc);
+//        gbc.gridx = 0; gbc.gridy++;
+//        panel.add(new JLabel("Email:"), gbc);
+//        gbc.gridx = 1;
+//        panel.add(emailField, gbc);
 
         gbc.gridx = 0; gbc.gridy++;
-        panel.add(new JLabel("Address:"), gbc);
+        panel.add(new JLabel("Location:"), gbc);
         gbc.gridx = 1;
-        panel.add(addressField, gbc);
+        panel.add(locationField, gbc);
 
         gbc.gridx = 0; gbc.gridy++;
         panel.add(new JLabel("Status:"), gbc);
@@ -99,15 +99,15 @@ public class WarehouseInfoPanel extends JPanel {
         warehouseNameField.setEditable(editable);
         contactNameField.setEditable(editable);
         phoneField.setEditable(editable);
-        emailField.setEditable(editable);
-        addressField.setEditable(editable);
+     //   emailField.setEditable(editable);
+        locationField.setEditable(editable);
 
         editSaveButton.setText(isEditing ? "Save" : "Edit");
     }
 
     private void loadWarehouseDataAsync() {
         new SwingWorker<Void, Void>() {
-            private String warehouseName, contactName, phone, email, address, status;
+            private String warehouseName, contactName, phone, location, status;
 
             @Override
             protected Void doInBackground() {
@@ -117,8 +117,8 @@ public class WarehouseInfoPanel extends JPanel {
                     warehouseName = (String) warehouseDetails[0];
                     contactName = (String) warehouseDetails[1];
                     phone = (String) warehouseDetails[2];
-                    email = (String) warehouseDetails[3];
-                    address = (String) warehouseDetails[4];
+                //    email = (String) warehouseDetails[3];
+                    location = (String) warehouseDetails[4];
                     status = (Boolean) warehouseDetails[5] ? "Active" : "Inactive";
                 }
                 return null;
@@ -131,8 +131,8 @@ public class WarehouseInfoPanel extends JPanel {
                     warehouseNameField.setText(warehouseName);
                     contactNameField.setText(contactName);
                     phoneField.setText(phone);
-                    emailField.setText(email);
-                    addressField.setText(address);
+               //     emailField.setText(email);
+                    locationField.setText(location);
                     statusField.setText(status);
                 });
             }
