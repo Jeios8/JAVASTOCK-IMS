@@ -42,7 +42,7 @@ public class MainUI {
         InventoryPanel inventoryPanel = new InventoryPanel(new InventoryVM());
         ReportsUI reportsUI = new ReportsUI(new ReportsVM());
         SupplierPanel supplierPanel = new SupplierPanel(new SupplierVM());
-        OrdersUI ordersUI = new OrdersUI(new OrdersVM());
+        OrdersPanel ordersPanel = new OrdersPanel(new OrdersVM());
         WarehousePanel warehousePanel = new WarehousePanel(new WarehouseVM());
 
         // Map keys match the ViewModel sections:
@@ -50,7 +50,7 @@ public class MainUI {
         dynamicPanels.put("Inventory", inventoryPanel);
         dynamicPanels.put("Reports", reportsUI);
         dynamicPanels.put("Suppliers", supplierPanel);
-        dynamicPanels.put("Orders", ordersUI);
+        dynamicPanels.put("Orders", ordersPanel);
         dynamicPanels.put("Manage Store", warehousePanel);
 
         // 2. Proceed with standard UI initialization
