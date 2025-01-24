@@ -1,0 +1,21 @@
+category_id,category_name,is_active
+1001,Beverages,true
+1002,Dairy Products,true
+1003,Meat & Poultry,true
+1004,Seafood,true
+1005,Frozen Foods,true
+1006,Bakery,true
+1007,Canned Goods,true
+1008,Snacks,true
+1009,Condiments & Spices,true
+1010,Grains & Pasta,true
+1011,Fruits,true
+1012,Vegetables,true
+1013,Household Essentials,true
+1014,Personal Care,true
+1015,Baby Products,true
+1016,Pet Supplies,true
+1017,Health & Wellness,true
+1018,Deli,true
+1019,Breakfast & Cereal,true
+1020,Alcoholic Beverages,true

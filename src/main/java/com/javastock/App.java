@@ -18,7 +18,7 @@ public class App {
             e.printStackTrace();
         }
 
-//         SwingUtilities.invokeLater(() -> new LoginUI(new LoginVM()));
-        SwingUtilities.invokeLater(() -> new MainUI(new MainVM()));
+         SwingUtilities.invokeLater(() -> new LoginUI(new LoginVM()));
+//        SwingUtilities.invokeLater(() -> new MainUI(new MainVM()));
     }
 }
