@@ -1,224 +1,148 @@
 package main.java.com.javastock.view;
 
-import main.java.com.javastock.viewmodel.ProductVM;
+import main.java.com.javastock.viewmodel.WarehouseVM;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class WarehouseInfoPanel extends JPanel {
-    private final ProductVM productVM;
+    private final WarehouseVM warehouseVM;
+    private final JFrame parentFrame;
+    private final int warehouseId;
 
-    public WarehouseInfoPanel(int productId) {
-        this.productVM = new ProductVM(productId);
+    private JTextField warehouseNameField, contactNameField, phoneField, emailField, addressField, statusField;
+    private JLabel warehouseIdLabel;
+    private JButton editSaveButton;
+    private boolean isEditing = false;
+
+    public WarehouseInfoPanel(JFrame parent, int warehouseId) {
+        this.parentFrame = parent;
+        this.warehouseId = warehouseId;
+        this.warehouseVM = new WarehouseVM();
 
         setLayout(new BorderLayout(20, 20));
-        setBorder(new EmptyBorder(20, 20, 20, 20)); // Padding
+        setBorder(new EmptyBorder(20, 20, 20, 20));
+        initializeFields();
 
-        // Fetch Product Data using ProductVM
-        String productName = productVM.getProductName();
-        String category = productVM.getCategory();
-        String supplierName = productVM.getSupplier();
-        int thresholdValue = productVM.getThreshold();
-        int stockOnHand = productVM.getStockOnHand();
-        int onTheWayStock = productVM.getOnTheWayStock();
-
-        // Buttons Panel (Anchored to the Top Right)
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton editButton = new JButton("Edit");
-        JButton downloadButton = new JButton("Download");
-        buttonPanel.add(editButton);
-        buttonPanel.add(downloadButton);
+        editSaveButton = new JButton("Edit");
+        buttonPanel.add(editSaveButton);
 
-        // Tabs
-        JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Overview", createOverviewPanel(productName, category, supplierName, thresholdValue, stockOnHand, onTheWayStock));
-        tabbedPane.addTab("Purchases", new JPanel()); // Placeholder
-        tabbedPane.addTab("Adjustments", new JPanel()); // Placeholder
-        tabbedPane.addTab("History", new JPanel()); // Placeholder
+        JPanel detailsPanel = createDetailsPanel();
 
-        // Main Panel (Contains Tabs & Buttons)
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.add(buttonPanel, BorderLayout.NORTH); // 🔹 Add Buttons Above Tabs
-        mainPanel.add(tabbedPane, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.NORTH);
+        add(detailsPanel, BorderLayout.CENTER);
 
-        add(mainPanel, BorderLayout.NORTH);
-        add(createStockLocationsPanel(), BorderLayout.CENTER);
+        editSaveButton.addActionListener(e -> toggleEditSaveMode());
+        loadWarehouseDataAsync();
     }
 
-    private JPanel createOverviewPanel(String productName, String category, String supplierName, int thresholdValue, int stockOnHand, int onTheWayStock) {
-        JPanel overviewPanel = new JPanel(new BorderLayout(10, 10));
-
-        // Left Side - Product & Supplier Details
-        JPanel leftPanel = new JPanel(new GridLayout(4, 2, 5, 5));
-        leftPanel.setBorder(BorderFactory.createTitledBorder("Primary Details"));
-
-        leftPanel.add(new JLabel("Product Name:"));
-        leftPanel.add(new JLabel(productName));
-
-        leftPanel.add(new JLabel("Category:"));
-        leftPanel.add(new JLabel(category));
-
-        leftPanel.add(new JLabel("Supplier:"));
-        leftPanel.add(new JLabel(supplierName));
-
-        leftPanel.add(new JLabel("Threshold Value:"));
-        leftPanel.add(new JLabel(String.valueOf(thresholdValue)));
-
-        overviewPanel.add(leftPanel, BorderLayout.WEST);
-
-        // Right Side - Stock Summary & Image
-        JPanel rightPanel = new JPanel(new BorderLayout());
-
-        // Product Image
-        JLabel productImageLabel = new JLabel();
-        productImageLabel.setBorder(BorderFactory.createDashedBorder(Color.GRAY));
-        productImageLabel.setHorizontalAlignment(JLabel.CENTER);
-        productImageLabel.setPreferredSize(new Dimension(150, 150));
-        productImageLabel.setIcon(new ImageIcon("path/to/product-image.jpg")); // Placeholder
-
-        // Stock Summary Panel
-        JPanel stockPanel = new JPanel(new GridLayout(3, 2, 5, 5));
-        stockPanel.setBorder(BorderFactory.createTitledBorder("Stock Summary"));
-
-        stockPanel.add(new JLabel("Stock On Hand:"));
-        stockPanel.add(new JLabel(String.valueOf(stockOnHand)));
-
-        stockPanel.add(new JLabel("On the Way:"));
-        stockPanel.add(new JLabel(String.valueOf(onTheWayStock)));
-
-        stockPanel.add(new JLabel("Threshold Value:"));
-        stockPanel.add(new JLabel(String.valueOf(thresholdValue)));
-
-        rightPanel.add(productImageLabel, BorderLayout.NORTH);
-        rightPanel.add(stockPanel, BorderLayout.SOUTH);
-
-        overviewPanel.add(rightPanel, BorderLayout.EAST);
-
-        return overviewPanel;
+    private void initializeFields() {
+        warehouseIdLabel = new JLabel("Loading...");
+        warehouseNameField = createEditableTextField("Loading...");
+        contactNameField = createEditableTextField("Loading...");
+        phoneField = createEditableTextField("Loading...");
+        emailField = createEditableTextField("Loading...");
+        addressField = createEditableTextField("Loading...");
+        statusField = createEditableTextField("Loading...");
     }
 
-    private JPanel createStockLocationsPanel() {
-        JPanel stockLocationsPanel = new JPanel(new BorderLayout(10, 10));
-        stockLocationsPanel.setBorder(BorderFactory.createTitledBorder("Stock Locations"));
+    private JPanel createDetailsPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Fetch stock location data from ProductVM
-        String[] columnNames = {"Store Name", "Stock in Hand"};
-        Object[][] data = productVM.getStockLocations();
+        gbc.gridx = 0; gbc.gridy = 0;
+        panel.add(new JLabel("Warehouse ID:"), gbc);
+        gbc.gridx = 1;
+        panel.add(warehouseIdLabel, gbc);
 
-        JTable stockLocationsTable = new JTable(data, columnNames);
-        JScrollPane scrollPane = new JScrollPane(stockLocationsTable);
-        stockLocationsPanel.add(scrollPane, BorderLayout.CENTER);
+        gbc.gridx = 0; gbc.gridy++;
+        panel.add(new JLabel("Warehouse Name:"), gbc);
+        gbc.gridx = 1;
+        panel.add(warehouseNameField, gbc);
 
-        return stockLocationsPanel;
+        gbc.gridx = 0; gbc.gridy++;
+        panel.add(new JLabel("Contact Name:"), gbc);
+        gbc.gridx = 1;
+        panel.add(contactNameField, gbc);
+
+        gbc.gridx = 0; gbc.gridy++;
+        panel.add(new JLabel("Phone:"), gbc);
+        gbc.gridx = 1;
+        panel.add(phoneField, gbc);
+
+        gbc.gridx = 0; gbc.gridy++;
+        panel.add(new JLabel("Email:"), gbc);
+        gbc.gridx = 1;
+        panel.add(emailField, gbc);
+
+        gbc.gridx = 0; gbc.gridy++;
+        panel.add(new JLabel("Address:"), gbc);
+        gbc.gridx = 1;
+        panel.add(addressField, gbc);
+
+        gbc.gridx = 0; gbc.gridy++;
+        panel.add(new JLabel("Status:"), gbc);
+        gbc.gridx = 1;
+        panel.add(statusField, gbc);
+
+        return panel;
+    }
+
+    private void toggleEditSaveMode() {
+        isEditing = !isEditing;
+        boolean editable = isEditing;
+
+        warehouseNameField.setEditable(editable);
+        contactNameField.setEditable(editable);
+        phoneField.setEditable(editable);
+        emailField.setEditable(editable);
+        addressField.setEditable(editable);
+
+        editSaveButton.setText(isEditing ? "Save" : "Edit");
+    }
+
+    private void loadWarehouseDataAsync() {
+        new SwingWorker<Void, Void>() {
+            private String warehouseName, contactName, phone, email, address, status;
+
+            @Override
+            protected Void doInBackground() {
+                Object[] warehouseDetails = warehouseVM.getWarehouseDetailsById(warehouseId);
+
+                if (warehouseDetails != null) {
+                    warehouseName = (String) warehouseDetails[0];
+                    contactName = (String) warehouseDetails[1];
+                    phone = (String) warehouseDetails[2];
+                    email = (String) warehouseDetails[3];
+                    address = (String) warehouseDetails[4];
+                    status = (Boolean) warehouseDetails[5] ? "Active" : "Inactive";
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                SwingUtilities.invokeLater(() -> {
+                    warehouseIdLabel.setText(String.valueOf(warehouseId));
+                    warehouseNameField.setText(warehouseName);
+                    contactNameField.setText(contactName);
+                    phoneField.setText(phone);
+                    emailField.setText(email);
+                    addressField.setText(address);
+                    statusField.setText(status);
+                });
+            }
+        }.execute();
+    }
+
+    private JTextField createEditableTextField(String text) {
+        JTextField field = new JTextField(text);
+        field.setEditable(false);
+        field.setColumns(15);
+        return field;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//package main.java.com.javastock.view;
-//
-//import main.java.com.javastock.viewmodel.WarehouseVM;
-//
-//import javax.swing.*;
-//import javax.swing.border.EmptyBorder;
-//import java.awt.*;
-//
-//public class WarehouseInfoPanel extends JPanel {
-//    private final WarehouseVM warehouseVM;
-//
-//    public WarehouseInfoPanel(int warehouseId) {
-//        this.warehouseVM = new WarehouseVM(warehouseId);
-//
-//        setLayout(new BorderLayout(20, 20));
-//        setBorder(new EmptyBorder(20, 20, 20, 20)); // Padding
-//
-//        // Fetch Warehouse Data using WarehouseVM
-////        String warehouseName = warehouseVM.getWarehouseName();
-////        String location = warehouseVM.getLocation();
-////        String contactName = warehouseVM.getContactName();
-////        String phone = warehouseVM.getPhone();
-//
-//        String warehouseName = "sample";
-//        String location = "sample";
-//        String contactName = "sample";
-//        String phone = "sample";
-//
-//        // Buttons Panel (Anchored to the Top Right)
-//        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-//        JButton editButton = new JButton("Edit");
-//        JButton downloadButton = new JButton("Download");
-//        buttonPanel.add(editButton);
-//        buttonPanel.add(downloadButton);
-//
-//        // Tabs
-//        JTabbedPane tabbedPane = new JTabbedPane();
-//        tabbedPane.addTab("Overview", createOverviewPanel(warehouseName, location, contactName, phone));
-//        tabbedPane.addTab("History", new JPanel()); // Placeholder
-//
-//        // Main Panel (Contains Tabs & Buttons)
-//        JPanel mainPanel = new JPanel(new BorderLayout());
-//        mainPanel.add(buttonPanel, BorderLayout.NORTH); // 🔹 Add Buttons Above Tabs
-//        mainPanel.add(tabbedPane, BorderLayout.CENTER);
-//
-//        add(mainPanel, BorderLayout.NORTH);
-//    }
-//
-//    private JPanel createOverviewPanel(String warehouseName, String location, String contactName, String phone) {
-//        JPanel overviewPanel = new JPanel(new BorderLayout(10, 10));
-//
-//        // Left Side - Warehouse & Supplier Details
-//        JPanel leftPanel = new JPanel(new GridLayout(4, 2, 5, 5));
-//        leftPanel.setBorder(BorderFactory.createTitledBorder("Primary Details"));
-//
-//        leftPanel.add(new JLabel("Warehouse Name:"));
-//        leftPanel.add(new JLabel(warehouseName));
-//
-//        leftPanel.add(new JLabel("Location:"));
-//        leftPanel.add(new JLabel(location));
-//
-//        leftPanel.add(new JLabel("Contact Name:"));
-//        leftPanel.add(new JLabel(contactName));
-//
-//        leftPanel.add(new JLabel("Phone Number:"));
-//        leftPanel.add(new JLabel(phone));
-//
-//        overviewPanel.add(leftPanel, BorderLayout.WEST);
-//
-//        // Right Side - Stock Summary & Image
-//        JPanel rightPanel = new JPanel(new BorderLayout());
-//
-//        // Warehouse Image
-//        JLabel warehouseImageLabel = new JLabel();
-//        warehouseImageLabel.setBorder(BorderFactory.createDashedBorder(Color.GRAY));
-//        warehouseImageLabel.setHorizontalAlignment(JLabel.CENTER);
-//        warehouseImageLabel.setPreferredSize(new Dimension(150, 150));
-//        warehouseImageLabel.setIcon(new ImageIcon("path/to/warehouse-image.jpg")); // Placeholder
-//
-//        // Stock Summary Panel
-//        JPanel stockPanel = new JPanel(new GridLayout(3, 2, 5, 5));
-//        stockPanel.setBorder(BorderFactory.createTitledBorder("Stock Summary"));
-//
-//        rightPanel.add(warehouseImageLabel, BorderLayout.NORTH);
-//        rightPanel.add(stockPanel, BorderLayout.SOUTH);
-//
-//        overviewPanel.add(rightPanel, BorderLayout.EAST);
-//
-//        return overviewPanel;
-//    }
-//}

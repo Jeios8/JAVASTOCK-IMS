@@ -1,5 +1,7 @@
 package main.java.com.javastock.viewmodel;
 
+import main.java.com.javastock.dao.WarehouseDAO;
+import main.java.com.javastock.model.Warehouse;
 import main.java.com.javastock.utils.DatabaseConnector;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.SwingWorker;
@@ -13,7 +15,7 @@ public class WarehouseVM {
 
     public WarehouseVM() {
         tableModel = new DefaultTableModel(
-                new String[]{"Warehouse ID", "Warehouse Name", "Location", "Contact Name", "Phone"},
+                new String[]{"Warehouse ID", "Warehouse Name", "Contact Name", "Phone", "Email", "Address", "Status"},
                 0
         );
     }
@@ -26,11 +28,11 @@ public class WarehouseVM {
         this.onDataLoaded = onDataLoaded;
     }
 
-    public void loadWarehouseAsync() {
+    public void loadWarehousesAsync() {
         new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() {
-                loadWarehouse();
+                loadWarehouses();
                 return null;
             }
 
@@ -41,11 +43,22 @@ public class WarehouseVM {
         }.execute();
     }
 
-    public void loadWarehouse() {
+    public void loadWarehouses() {
         String query = """
-    SELECT warehouse_id, warehouse_name, location, contact_name, phone
-    FROM warehouses;
-    """;
+        SELECT 
+            warehouse_id, 
+            warehouse_name, 
+            contact_name, 
+            phone, 
+            email, 
+            address, 
+            CASE 
+                WHEN is_active THEN 'Active'
+                ELSE 'Inactive'
+            END AS status
+        FROM warehouses
+        ORDER BY warehouse_name ASC;
+        """;
 
         try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
@@ -54,135 +67,56 @@ public class WarehouseVM {
             tableModel.setRowCount(0);  // Clear previous data
 
             while (rs.next()) {
-                // Ensure the array size matches exactly the number of columns in DefaultTableModel
-                Object[] rowData = new Object[tableModel.getColumnCount()];
-
-                rowData[0] = rs.getInt("warehouse_id");
-                rowData[1] = rs.getString("warehouse_name");
-                rowData[2] = rs.getString("location");
-                rowData[3] = rs.getString("contact_name");
-                rowData[4] = rs.getString("phone");
-
-                if (rowData.length == tableModel.getColumnCount()) {
-                    tableModel.addRow(rowData);
-                } else {
-                    System.err.println("Error: Column count mismatch! Expected " + tableModel.getColumnCount() + " but got " + rowData.length);
-                }
+                tableModel.addRow(new Object[]{
+                        rs.getInt("warehouse_id"),
+                        rs.getString("warehouse_name"),
+                        rs.getString("contact_name"),
+                        rs.getString("phone"),
+                        rs.getString("email"),
+                        rs.getString("address"),
+                        rs.getString("status")
+                });
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public boolean validateAndAddWarehouse(String name, String location, String contact, String phone) {
-        
-        boolean success = addWarehouse(name, location, contact, phone);
-        if (success) {
-            loadWarehouseAsync();
+    public boolean addWarehouse(String name, String contact, String phone, String email, String address) {
+        if (name.isEmpty() || email.isEmpty()) {
+            System.err.println("❌ Validation Error: Warehouse name and email are required.");
+            return false;
         }
 
-        return success;
-    }
-
-    private boolean addWarehouse(String name, String location, String contact, String phone) {
-        Connection conn = null;
-        PreparedStatement warehouseStmt = null;
-        // PreparedStatement warehouseStmt = null;
-        ResultSet generatedKeys = null;
-
-        try {
-            conn = DatabaseConnector.getConnection();
-            conn.setAutoCommit(false);
-
-            // **Insert into warehouses table**
-            String warehouseQuery = """
-        INSERT INTO warehouses (warehouse_name, location, contact_name, phone)
-        VALUES (?, ?, ?, ?)
+        String query = """
+        INSERT INTO warehouses (warehouse_name, contact_name, phone, email, address, is_active)
+        VALUES (?, ?, ?, ?, ?, TRUE);
         """;
 
-            warehouseStmt = conn.prepareStatement(warehouseQuery, Statement.RETURN_GENERATED_KEYS);
-            warehouseStmt.setString(1, name);
-            warehouseStmt.setString(2, location);
-            warehouseStmt.setString(3, contact);
-            warehouseStmt.setString(4, phone);
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            int affectedRows = warehouseStmt.executeUpdate();
-            if (affectedRows == 0) {
-                conn.rollback();
-                return false;
+            stmt.setString(1, name);
+            stmt.setString(2, contact);
+            stmt.setString(3, phone);
+            stmt.setString(4, email);
+            stmt.setString(5, address);
+
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows > 0) {
+                loadWarehousesAsync();
+                return true;
             }
-
-            // **Retrieve generated warehouse_id**
-            generatedKeys = warehouseStmt.getGeneratedKeys();
-            int warehouseId = -1;
-            if (generatedKeys.next()) {
-                warehouseId = generatedKeys.getInt(1);
-            } else {
-                conn.rollback();
-                return false;
-            }
-
-            // **Insert into warehouseINVENTORY table**
-//            String warehouseQuery = """
-//        INSERT INTO warehouse (product_id, warehouse_id, quantity, status)
-//        VALUES (?, (SELECT warehouse_id FROM warehouses WHERE warehouse_name = ? LIMIT 1), ?, 'Received')
-//        """;
-//
-//            warehouseStmt = conn.prepareStatement(warehouseQuery);
-//            warehouseStmt.setInt(1, productId);
-//            warehouseStmt.setString(2, warehouse);
-//            warehouseStmt.setInt(3, quantity);
-//
-//            int warehouseRows = warehouseStmt.executeUpdate();
-//            if (warehouseRows == 0) {
-//                conn.rollback();
-//                return false;
-//            }
-//
-            conn.commit();
-            return true;
         } catch (SQLException e) {
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
+            System.err.println("❌ Database Error in addWarehouse(): " + e.getMessage());
             e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                if (generatedKeys != null) generatedKeys.close();
-                //  if (productStmt != null) productStmt.close();
-                if (warehouseStmt != null) warehouseStmt.close();
-                if (conn != null) conn.close();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
         }
+        return false;
     }
 
-//    public String[] getCategories() {
-//        List<String> categories = new ArrayList<>();
-//        String query = "SELECT category_name FROM categories WHERE is_active = true";
-//
-//        try (Connection conn = DatabaseConnector.getConnection();
-//             PreparedStatement stmt = conn.prepareStatement(query);
-//             ResultSet rs = stmt.executeQuery()) {
-//
-//            while (rs.next()) {
-//                categories.add(rs.getString("category_name"));
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return categories.toArray(new String[0]);
-//    }
-//
-    public String[] getWarehouses() {
+    public String[] getWarehouseNames() {
         List<String> warehouses = new ArrayList<>();
-        String query = "SELECT warehouse_name FROM warehouses WHERE is_active = true";
+        String query = "SELECT warehouse_name FROM warehouses WHERE is_active = TRUE ORDER BY warehouse_name ASC";
 
         try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
@@ -197,60 +131,33 @@ public class WarehouseVM {
         return warehouses.toArray(new String[0]);
     }
 
-//    public String[] getWarehouses() {
-//        List<String> warehouses = new ArrayList<>();
-//        String query = "SELECT warehouse_name FROM warehouses WHERE is_active = true";
-//
-//        try (Connection conn = DatabaseConnector.getConnection();
-//             PreparedStatement stmt = conn.prepareStatement(query);
-//             ResultSet rs = stmt.executeQuery()) {
-//
-//            while (rs.next()) {
-//                warehouses.add(rs.getString("warehouse_name"));
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return warehouses.toArray(new String[0]);
-//    }
-//
-//    public void filterWarehouse(String availability) {
-//        String query = """
-//    SELECT p.product_id, p.product_name, p.unit_price, i.quantity, p.reorder_level,
-//           CASE
-//               WHEN i.quantity = 0 THEN 'Out of stock'
-//               WHEN i.quantity <= p.reorder_level THEN 'Low stock'
-//               ELSE 'In-stock'
-//           END AS availability
-//    FROM warehouse i
-//    JOIN products p ON i.product_id = p.product_id
-//    WHERE (CASE
-//               WHEN i.quantity = 0 THEN 'Out of stock'
-//               WHEN i.quantity <= p.reorder_level THEN 'Low stock'
-//               ELSE 'In-stock'
-//           END) = ?;
-//    """;
-//
-//        try (Connection conn = DatabaseConnector.getConnection();
-//             PreparedStatement stmt = conn.prepareStatement(query)) {
-//
-//            stmt.setString(1, availability);
-//            ResultSet rs = stmt.executeQuery();
-//            tableModel.setRowCount(0);
-//
-//            while (rs.next()) {
-//                tableModel.addRow(new Object[]{
-//                        rs.getInt("product_id"),
-//                        rs.getString("product_name"),
-//                        "₱" + rs.getDouble("unit_price"),
-//                        rs.getInt("quantity") + " Units",
-//                        rs.getInt("reorder_level") + " Units",
-//                        rs.getString("availability")
-//                });
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public Object[] getWarehouseDetailsById(int warehouseId) {
+        String query = """
+        SELECT warehouse_name, contact_name, phone, email, address, is_active
+        FROM warehouses
+        WHERE warehouse_id = ?
+    """;
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, warehouseId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Object[]{
+                            rs.getString("warehouse_name"),
+                            rs.getString("contact_name"),
+                            rs.getString("phone"),
+                            rs.getString("email"),
+                            rs.getString("address"),
+                            rs.getBoolean("is_active")
+                    };
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 }

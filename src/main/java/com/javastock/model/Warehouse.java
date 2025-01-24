@@ -3,20 +3,22 @@ package main.java.com.javastock.model;
 public class Warehouse {
     private int warehouseId;
     private String warehouseName;
-    private String location;
     private String contactName;
     private String phone;
+    private String email;
+    private String address;
     private boolean isActive;
 
     // Constructors
     public Warehouse() {}
 
-    public Warehouse(int warehouseId, String warehouseName, String location,String contactName, String phone,  boolean isActive) {
+    public Warehouse(int warehouseId, String warehouseName, String contactName, String phone, String email, String address, boolean isActive) {
         this.warehouseId = warehouseId;
         this.warehouseName = warehouseName;
-        this.location = location;
         this.contactName = contactName;
         this.phone = phone;
+        this.email = email;
+        this.address = address;
         this.isActive = isActive;
     }
 
@@ -37,18 +39,9 @@ public class Warehouse {
         this.warehouseName = warehouseName;
     }
 
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
     public String getContactName() {
         return contactName;
     }
-
 
     public void setContactName(String contactName) {
         this.contactName = contactName;
@@ -60,6 +53,22 @@ public class Warehouse {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public boolean isActive() {
