@@ -81,8 +81,8 @@ public class MainUI {
 
         // 3. Add sections from the ViewModel (default content panels)
         // Ensure "Dashboard" is added first
-        contentPanel.add("Dashboard", new DashboardUI(new DashboardVM()));
-//        new DashboardUI(new DashboardVM());
+        DashboardVM dashboardVM = new DashboardVM(); // Single Instance
+        contentPanel.add("Dashboard", new DashboardUI(dashboardVM));
 
         for (String section : viewModel.getSections().keySet()) {
             if (!section.equals("Dashboard")) {

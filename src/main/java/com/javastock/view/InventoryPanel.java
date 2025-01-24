@@ -181,6 +181,7 @@ public class InventoryPanel extends JPanel {
                 cell.setBackground(Color.WHITE); // Default color
             }
 
+            cell.setForeground(Color.black);
             // Preserve selection highlight
             if (isSelected) {
                 cell.setBackground(table.getSelectionBackground());
