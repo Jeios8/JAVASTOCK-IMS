@@ -43,7 +43,6 @@ public class WarehouseInfoPanel extends JPanel {
         warehouseNameField = createEditableTextField("Loading...");
         contactNameField = createEditableTextField("Loading...");
         phoneField = createEditableTextField("Loading...");
-      //  emailField = createEditableTextField("Loading...");
         locationField = createEditableTextField("Loading...");
         statusField = createEditableTextField("Loading...");
     }
@@ -73,11 +72,6 @@ public class WarehouseInfoPanel extends JPanel {
         panel.add(new JLabel("Phone:"), gbc);
         gbc.gridx = 1;
         panel.add(phoneField, gbc);
-
-//        gbc.gridx = 0; gbc.gridy++;
-//        panel.add(new JLabel("Email:"), gbc);
-//        gbc.gridx = 1;
-//        panel.add(emailField, gbc);
 
         gbc.gridx = 0; gbc.gridy++;
         panel.add(new JLabel("Location:"), gbc);
@@ -117,9 +111,8 @@ public class WarehouseInfoPanel extends JPanel {
                     warehouseName = (String) warehouseDetails[0];
                     contactName = (String) warehouseDetails[1];
                     phone = (String) warehouseDetails[2];
-                //    email = (String) warehouseDetails[3];
-                    location = (String) warehouseDetails[4];
-                    status = (Boolean) warehouseDetails[5] ? "Active" : "Inactive";
+                    location = (String) warehouseDetails[3];
+                    status = (Boolean) warehouseDetails[4] ? "Active" : "Inactive";
                 }
                 return null;
             }
@@ -131,7 +124,6 @@ public class WarehouseInfoPanel extends JPanel {
                     warehouseNameField.setText(warehouseName);
                     contactNameField.setText(contactName);
                     phoneField.setText(phone);
-               //     emailField.setText(email);
                     locationField.setText(location);
                     statusField.setText(status);
                 });

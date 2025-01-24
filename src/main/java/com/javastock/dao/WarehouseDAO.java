@@ -58,8 +58,7 @@ public class WarehouseDAO {
             stmt.setString(1, warehouse.getWarehouseName());
             stmt.setString(2, warehouse.getContactName());
             stmt.setString(3, warehouse.getPhone());
-          //  stmt.setString(4, warehouse.getEmail());
-            stmt.setString(5, warehouse.getLocation());
+            stmt.setString(4, warehouse.getLocation());
 
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
@@ -76,8 +75,7 @@ public class WarehouseDAO {
         UPDATE warehouses SET 
             warehouse_name = ?, 
             contact_name = ?, 
-            phone = ?, 
-         
+            phone = ?,
             location = ?, 
             is_active = ? 
         WHERE warehouse_id = ?
@@ -89,7 +87,6 @@ public class WarehouseDAO {
             stmt.setString(1, warehouse.getWarehouseName());
             stmt.setString(2, warehouse.getContactName());
             stmt.setString(3, warehouse.getPhone());
-         //   stmt.setString(4, warehouse.getEmail());
             stmt.setString(5, warehouse.getLocation());
             stmt.setBoolean(6, warehouse.isActive());
             stmt.setInt(7, warehouse.getWarehouseId());
@@ -126,7 +123,6 @@ public class WarehouseDAO {
                 rs.getString("warehouse_name"),
                 rs.getString("contact_name"),
                 rs.getString("phone"),
-             //   rs.getString("email"),
                 rs.getString("location"),
                 rs.getBoolean("is_active")
         );

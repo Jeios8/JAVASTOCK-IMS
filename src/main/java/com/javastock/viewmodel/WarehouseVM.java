@@ -83,11 +83,6 @@ public class WarehouseVM {
     }
 
     public boolean addWarehouse(String name, String contact, String phone, String location) {
-//        if (name.isEmpty() || email.isEmpty()) {
-//            System.err.println("❌ Validation Error: Warehouse name and email are required.");
-//            return false;
-//        }
-
         String query = """
         INSERT INTO warehouses (warehouse_name, contact_name, phone, location, is_active)
         VALUES (?, ?, ?, ?, ?, TRUE);
@@ -147,7 +142,6 @@ public class WarehouseVM {
                             rs.getString("warehouse_name"),
                             rs.getString("contact_name"),
                             rs.getString("phone"),
-                          //  rs.getString("email"),
                             rs.getString("location"),
                             rs.getBoolean("is_active")
                     };

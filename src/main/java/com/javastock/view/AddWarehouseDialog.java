@@ -38,7 +38,6 @@ public class AddWarehouseDialog extends JDialog {
         nameField = createRoundedTextField("Enter warehouse name...");
         contactField = createRoundedTextField("Enter contact name...");
         phoneField = createRoundedTextField("Enter phone number...");
-    //    emailField = createRoundedTextField("Enter email...");
         locationField = createRoundedTextField("Enter location...");
 
         mainPanel.add(new JLabel("Warehouse Name:"), gbc);
@@ -52,10 +51,6 @@ public class AddWarehouseDialog extends JDialog {
         mainPanel.add(new JLabel("Phone:"), gbc);
         mainPanel.add(phoneField, inputGbc);
         gbc.gridy++; inputGbc.gridy++;
-
-//        mainPanel.add(new JLabel("Email:"), gbc);
-//        mainPanel.add(emailField, inputGbc);
-//        gbc.gridy++; inputGbc.gridy++;
 
         mainPanel.add(new JLabel("Location:"), gbc);
         mainPanel.add(locationField, inputGbc);
