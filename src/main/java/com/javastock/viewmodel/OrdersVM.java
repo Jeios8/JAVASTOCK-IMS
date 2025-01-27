@@ -8,19 +8,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OrdersVM {
-    private DefaultTableModel salesOrdersTableModel;
-    private DefaultTableModel purchaseOrdersTableModel;
-    private Runnable onDataLoaded; // Callback to update UI
+    private final DefaultTableModel salesOrdersTableModel;
+    private final DefaultTableModel purchaseOrdersTableModel;
+    private Runnable onDataLoaded;
 
     public OrdersVM() {
         salesOrdersTableModel = new DefaultTableModel(
-                new String[]{"Order ID", "Customer", "Order Date", "Status"},
-                0
+                new String[]{"Order ID", "Customer", "Order Date", "Status"}, 0
         );
-
         purchaseOrdersTableModel = new DefaultTableModel(
-                new String[]{"Order ID", "Supplier", "Order Date", "Expected Arrival", "Status"},
-                0
+                new String[]{"Order ID", "Supplier", "Order Date", "Expected Arrival", "Status"}, 0
         );
     }
 
@@ -40,8 +37,8 @@ public class OrdersVM {
         new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() {
-                loadSalesOrders();
-                loadPurchaseOrders();
+                loadOrders(true);
+                loadOrders(false);
                 return null;
             }
 
@@ -52,64 +49,32 @@ public class OrdersVM {
         }.execute();
     }
 
-    private void loadSalesOrders() {
-        String query = """
-        SELECT 
-            so.sales_order_id AS order_id,
-            CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
-            so.order_date,
-            so.status
+    private void loadOrders(boolean isSalesOrder) {
+        String query = isSalesOrder ? """
+        SELECT so.sales_order_id, CONCAT(c.first_name, ' ', c.last_name) AS customer, 
+               so.order_date, so.status
         FROM sales_orders so
         LEFT JOIN customers c ON so.customer_id = c.customer_id
         ORDER BY so.order_date DESC;
-        """;
+        """ :
+                """
+                SELECT po.purchase_order_id, s.supplier_name, po.order_date, po.expected_arrival_date, po.status
+                FROM purchase_orders po
+                LEFT JOIN suppliers s ON po.supplier_id = s.supplier_id
+                ORDER BY po.order_date DESC;
+                """;
 
         try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
-            salesOrdersTableModel.setRowCount(0); // Clear previous data
+            DefaultTableModel tableModel = isSalesOrder ? salesOrdersTableModel : purchaseOrdersTableModel;
+            tableModel.setRowCount(0);
 
             while (rs.next()) {
-                salesOrdersTableModel.addRow(new Object[]{
-                        rs.getInt("order_id"),
-                        rs.getString("customer_name") != null ? rs.getString("customer_name") : "Guest",
-                        rs.getDate("order_date"),
-                        rs.getString("status")
-                });
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void loadPurchaseOrders() {
-        String query = """
-        SELECT 
-            po.purchase_order_id AS order_id,
-            s.supplier_name,
-            po.order_date,
-            po.expected_arrival_date,
-            po.status
-        FROM purchase_orders po
-        LEFT JOIN suppliers s ON po.supplier_id = s.supplier_id
-        ORDER BY po.order_date DESC;
-        """;
-
-        try (Connection conn = DatabaseConnector.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
-
-            purchaseOrdersTableModel.setRowCount(0); // Clear previous data
-
-            while (rs.next()) {
-                purchaseOrdersTableModel.addRow(new Object[]{
-                        rs.getInt("order_id"),
-                        rs.getString("supplier_name"),
-                        rs.getDate("order_date"),
-                        rs.getDate("expected_arrival_date"),
-                        rs.getString("status")
-                });
+                tableModel.addRow(isSalesOrder ?
+                        new Object[]{rs.getInt(1), rs.getString(2) != null ? rs.getString(2) : "Guest", rs.getDate(3), rs.getString(4)} :
+                        new Object[]{rs.getInt(1), rs.getString(2), rs.getDate(3), rs.getDate(4), rs.getString(5)});
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -117,54 +82,29 @@ public class OrdersVM {
     }
 
     public Object[] getOrderDetailsById(int orderId, boolean isSalesOrder) {
-        String query;
-        if (isSalesOrder) {
-            query = """
-            SELECT 
-                so.sales_order_id AS order_id,
-                CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
-                so.order_date,
-                so.status
+        String query = isSalesOrder ? """
+            SELECT so.sales_order_id, CONCAT(c.first_name, ' ', c.last_name) AS customer, 
+                   so.order_date, so.status
             FROM sales_orders so
             LEFT JOIN customers c ON so.customer_id = c.customer_id
             WHERE so.sales_order_id = ?
-            """;
-        } else {
-            query = """
-            SELECT 
-                po.purchase_order_id AS order_id,
-                s.supplier_name,
-                po.order_date,
-                po.expected_arrival_date,
-                po.status
-            FROM purchase_orders po
-            LEFT JOIN suppliers s ON po.supplier_id = s.supplier_id
-            WHERE po.purchase_order_id = ?
-            """;
-        }
+            """ :
+                """
+                SELECT po.purchase_order_id, s.supplier_name, po.order_date, 
+                       po.expected_arrival_date, po.status
+                FROM purchase_orders po
+                LEFT JOIN suppliers s ON po.supplier_id = s.supplier_id
+                WHERE po.purchase_order_id = ?
+                """;
 
         try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
-
             stmt.setInt(1, orderId);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    if (isSalesOrder) {
-                        return new Object[]{
-                                rs.getInt("order_id"),
-                                rs.getString("customer_name") != null ? rs.getString("customer_name") : "Guest",
-                                rs.getDate("order_date"),
-                                rs.getString("status")
-                        };
-                    } else {
-                        return new Object[]{
-                                rs.getInt("order_id"),
-                                rs.getString("supplier_name"),
-                                rs.getDate("order_date"),
-                                rs.getDate("expected_arrival_date"),
-                                rs.getString("status")
-                        };
-                    }
+                    return isSalesOrder ?
+                            new Object[]{rs.getInt(1), rs.getString(2) != null ? rs.getString(2) : "Guest", rs.getDate(3), rs.getString(4)} :
+                            new Object[]{rs.getInt(1), rs.getString(2), rs.getDate(3), rs.getDate(4), rs.getString(5)};
                 }
             }
         } catch (SQLException e) {
@@ -173,101 +113,148 @@ public class OrdersVM {
         return null;
     }
 
-    public String[] getCustomerNames() {
-        List<String> customers = new ArrayList<>();
-        String query = "SELECT CONCAT(first_name, ' ', last_name) FROM customers WHERE is_active = TRUE ORDER BY first_name ASC";
+    public boolean addCustomerOrder(String firstName, String lastName, String phone, String email, String productName, int quantity) {
+        int customerId = getOrCreateCustomer(firstName, lastName, phone, email);
+        if (customerId == -1) return false;
 
-        try (Connection conn = DatabaseConnector.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                customers.add(rs.getString(1));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return customers.toArray(new String[0]);
+        return insertOrder(customerId, productName, quantity, true);
     }
 
-    public boolean addOrder(int customerId, String orderDate, String status) {
-        String query = """
-        INSERT INTO sales_orders (customer_id, order_date, status) 
-        VALUES (?, ?, ?);
-    """;
+    public boolean addSupplierOrder(int supplierId, String productName, int quantity, int warehouseId, String arrivalDate) {
+        return insertOrder(supplierId, productName, quantity, false, warehouseId, arrivalDate);
+    }
+
+    private boolean insertOrder(int entityId, String productName, int quantity, boolean isCustomerOrder, Object... extraParams) {
+        String orderQuery = isCustomerOrder ? """
+            INSERT INTO sales_orders (customer_id, order_date, status)
+            VALUES (?, CURDATE(), 'Pending')
+            """ :
+                """
+                INSERT INTO purchase_orders (supplier_id, order_date, expected_arrival_date, status)
+                VALUES (?, CURDATE(), ?, 'Pending')
+                """;
+
+        String itemQuery = isCustomerOrder ? """
+            INSERT INTO sales_order_items (sales_order_id, product_id, quantity, unit_price)
+            VALUES ((SELECT MAX(sales_order_id) FROM sales_orders), 
+                    (SELECT product_id FROM products WHERE product_name = ? LIMIT 1), ?, 
+                    (SELECT unit_price FROM products WHERE product_name = ? LIMIT 1))
+            """ :
+                """
+                INSERT INTO purchase_order_items (purchase_order_id, product_id, quantity, unit_price)
+                VALUES ((SELECT MAX(purchase_order_id) FROM purchase_orders), 
+                        (SELECT product_id FROM products WHERE product_name = ? LIMIT 1), ?, 
+                        (SELECT unit_price FROM products WHERE product_name = ? LIMIT 1))
+                """;
 
         try (Connection conn = DatabaseConnector.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             PreparedStatement orderStmt = conn.prepareStatement(orderQuery);
+             PreparedStatement itemStmt = conn.prepareStatement(itemQuery)) {
 
-            stmt.setInt(1, customerId);
-            stmt.setDate(2, Date.valueOf(orderDate));
-            stmt.setString(3, status);
+            orderStmt.setInt(1, entityId);
+            if (!isCustomerOrder) {
+                orderStmt.setString(2, (String) extraParams[1]); // expected_arrival_date
+            }
+            int affectedRows = orderStmt.executeUpdate();
 
-            int rowsInserted = stmt.executeUpdate();
-            return rowsInserted > 0;
+            if (affectedRows > 0) {
+                itemStmt.setString(1, productName);
+                itemStmt.setInt(2, quantity);
+                itemStmt.setString(3, productName);
+                itemStmt.executeUpdate();
+                return true;
+            }
         } catch (SQLException e) {
-            System.err.println("❌ Database Error in addOrder(): " + e.getMessage());
             e.printStackTrace();
         }
         return false;
     }
 
-    public DefaultTableModel getCustomerOrdersTableModel() {
-        DefaultTableModel model = new DefaultTableModel(
-                new String[]{"Order ID", "Customer", "Date", "Status"}, 0);
-
-        String query = """
-        SELECT o.sales_order_id, CONCAT(c.first_name, ' ', c.last_name) AS customer, 
-               o.order_date, o.status
-        FROM sales_orders o
-        JOIN customers c ON o.customer_id = c.customer_id
-        ORDER BY o.order_date DESC;
-    """;
-
-        try (Connection conn = DatabaseConnector.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                model.addRow(new Object[]{
-                        rs.getInt("sales_order_id"),
-                        rs.getString("customer"),
-                        rs.getDate("order_date"),
-                        rs.getString("status")
-                });
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return model;
+    private int getOrCreateCustomer(String firstName, String lastName, String phone, String email) {
+        return getOrCreateEntity(
+                "customers", "customer_id", "first_name = ? AND last_name = ? AND phone = ? AND email = ?",
+                new String[]{firstName, lastName, phone, email},
+                new String[]{"first_name", "last_name", "phone", "email", "is_active"},
+                new String[]{firstName, lastName, phone, email, "1"}
+        );
     }
-    public DefaultTableModel getSupplierOrdersTableModel() {
-        DefaultTableModel model = new DefaultTableModel(
-                new String[]{"PO ID", "Supplier", "Date", "Status"}, 0);
 
-        String query = """
-        SELECT po.purchase_order_id, s.supplier_name, po.order_date, po.status
-        FROM purchase_orders po
-        JOIN suppliers s ON po.supplier_id = s.supplier_id
-        ORDER BY po.order_date DESC;
-    """;
+    public int getSupplierIdByName(String supplierName) {
+        return getEntityId("suppliers", "supplier_id", "supplier_name", supplierName);
+    }
+
+    public int getWarehouseIdByName(String warehouseName) {
+        return getEntityId("warehouses", "warehouse_id", "warehouse_name", warehouseName);
+    }
+
+    private int getEntityId(String tableName, String idColumn, String nameColumn, String nameValue) {
+        String query = "SELECT " + idColumn + " FROM " + tableName + " WHERE " + nameColumn + " = ? LIMIT 1";
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, nameValue);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) return rs.getInt(idColumn);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    private int getOrCreateEntity(String tableName, String idColumn, String condition, String[] conditionValues,
+                                  String[] insertColumns, String[] insertValues) {
+        String checkQuery = "SELECT " + idColumn + " FROM " + tableName + " WHERE " + condition + " LIMIT 1";
+        String insertQuery = "INSERT INTO " + tableName + " (" + String.join(", ", insertColumns) + ") " +
+                "VALUES (" + "?,".repeat(insertColumns.length - 1) + "?)";
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
+             PreparedStatement insertStmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS)) {
+
+            // **1️⃣ Check if the entity exists**
+            for (int i = 0; i < conditionValues.length; i++) {
+                checkStmt.setString(i + 1, conditionValues[i]);
+            }
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(idColumn); // ✅ Return existing entity ID
+            }
+
+            // **2️⃣ Insert new entity**
+            for (int i = 0; i < insertValues.length; i++) {
+                insertStmt.setString(i + 1, insertValues[i]);
+            }
+            int affectedRows = insertStmt.executeUpdate();
+
+            // **3️⃣ Retrieve and return generated ID**
+            if (affectedRows > 0) {
+                ResultSet generatedKeys = insertStmt.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt(1); // ✅ Return new entity ID
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1; // ❌ Return -1 if creation failed
+    }
+
+    public String[] getProductNames() {
+        List<String> products = new ArrayList<>();
+        String query = "SELECT product_name FROM products ORDER BY product_name ASC";
 
         try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                model.addRow(new Object[]{
-                        rs.getInt("purchase_order_id"),
-                        rs.getString("supplier_name"),
-                        rs.getDate("order_date"),
-                        rs.getString("status")
-                });
+                products.add(rs.getString("product_name"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return model;
+        return products.toArray(new String[0]);
     }
 
 }

@@ -3,6 +3,7 @@ package main.java.com.javastock;
 import com.formdev.flatlaf.FlatLightLaf;
 import main.java.com.javastock.view.LoginUI;
 import main.java.com.javastock.view.ProductInfoPanel;
+import main.java.com.javastock.view.SplashUI;
 import main.java.com.javastock.viewmodel.LoginVM;
 import main.java.com.javastock.view.MainUI;
 import main.java.com.javastock.viewmodel.MainVM;
@@ -18,7 +19,9 @@ public class App {
             e.printStackTrace();
         }
 
-         SwingUtilities.invokeLater(() -> new LoginUI(new LoginVM()));
+//        SwingUtilities.invokeLater(() -> new LoginUI(new LoginVM()));
 //        SwingUtilities.invokeLater(() -> new MainUI(new MainVM()));
+
+        SwingUtilities.invokeLater(SplashUI::new);
     }
 }

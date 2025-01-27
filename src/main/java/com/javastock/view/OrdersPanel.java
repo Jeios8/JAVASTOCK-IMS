@@ -11,7 +11,7 @@ import java.awt.event.MouseEvent;
 
 public class OrdersPanel extends JPanel {
     private JTable salesOrdersTable, purchaseOrdersTable;
-    private JButton refreshButton, downloadButton;
+    private JButton refreshButton, downloadButton, createCustomerOrderButton, createSupplierOrderButton;
     private JProgressBar progressBar;
     private OrdersVM viewModel;
     private static final Color BUTTON_COLOR = new Color(153, 204, 255);
@@ -67,6 +67,8 @@ public class OrdersPanel extends JPanel {
 
         // **Buttons**
         refreshButton = createButton("🔄 Refresh", BUTTON_COLOR);
+        createCustomerOrderButton = createButton("📦 Create Customer Order", BUTTON_COLOR);
+        createSupplierOrderButton = createButton("📦 Create Supplier Order", BUTTON_COLOR);
         downloadButton = createButton("📜 Save Report", BUTTON_COLOR);
 
         JPanel topPanel = new JPanel(new BorderLayout());
@@ -74,6 +76,8 @@ public class OrdersPanel extends JPanel {
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
         leftPanel.add(refreshButton);
+        rightPanel.add(createCustomerOrderButton);
+        rightPanel.add(createSupplierOrderButton);
         rightPanel.add(downloadButton);
         topPanel.add(leftPanel, BorderLayout.WEST);
         topPanel.add(rightPanel, BorderLayout.EAST);
@@ -90,6 +94,8 @@ public class OrdersPanel extends JPanel {
 
         // **Button Actions**
         refreshButton.addActionListener(e -> refreshOrders());
+        createCustomerOrderButton.addActionListener(e -> new CreateCustomerOrderDialog((JFrame) SwingUtilities.getWindowAncestor(this), viewModel));
+        createSupplierOrderButton.addActionListener(e -> new CreateSupplierOrderDialog((JFrame) SwingUtilities.getWindowAncestor(this), viewModel));
         downloadButton.addActionListener(e -> CSVExporter.exportToCSV(salesOrdersTable));
 
         viewModel.setOnDataLoaded(() -> {

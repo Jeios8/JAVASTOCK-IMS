@@ -5,7 +5,18 @@ import java.sql.*;
 import java.util.*;
 import javax.swing.table.DefaultTableModel;
 
+/**
+ * ViewModel for the Dashboard, providing data insights for sales, purchases,
+ * stock levels, and other key business metrics.
+ */
 public class DashboardVM {
+
+    /**
+     * Retrieves an overview of sales data including total sales, revenue, profit,
+     * and canceled orders.
+     *
+     * @return A map containing sales statistics.
+     */
     public Map<String, Integer> getSalesOverview() {
         Map<String, Integer> data = new LinkedHashMap<>();
         String query = """
@@ -32,6 +43,11 @@ public class DashboardVM {
         return data;
     }
 
+    /**
+     * Retrieves an overview of purchase data including total purchases, cost, and expected returns.
+     *
+     * @return A map containing purchase statistics.
+     */
     public Map<String, Integer> getPurchaseOverview() {
         Map<String, Integer> data = new LinkedHashMap<>();
         String query = """
@@ -55,6 +71,11 @@ public class DashboardVM {
         return data;
     }
 
+    /**
+     * Retrieves a list of the top 10 best-selling products based on sales quantity.
+     *
+     * @return A list of maps containing product details (name, sold quantity, remaining stock, price).
+     */
     public List<Map<String, Object>> getTopSellingProducts() {
         List<Map<String, Object>> topSellingProducts = new ArrayList<>();
 
@@ -86,6 +107,11 @@ public class DashboardVM {
         return topSellingProducts;
     }
 
+    /**
+     * Retrieves a table model containing products with low stock levels.
+     *
+     * @return A DefaultTableModel containing product names, stock, and reorder levels.
+     */
     public DefaultTableModel getLowStockAlerts() {
         String[] columns = {"Product Name", "Stock", "Reorder Level"};
         DefaultTableModel model = new DefaultTableModel(columns, 0);
@@ -107,6 +133,12 @@ public class DashboardVM {
         }
         return model;
     }
+
+    /**
+     * Retrieves a list of products with low stock levels.
+     *
+     * @return A list of maps containing product details (name, remaining stock, price).
+     */
     public List<Map<String, Object>> getLowStockProducts() {
         List<Map<String, Object>> lowStockProducts = new ArrayList<>();
 

@@ -17,6 +17,9 @@ public class InventoryVM {
     private DefaultTableModel tableModel;
     private Runnable onDataLoaded; // Callback to update UI
 
+    /**
+     * Constructor initializes the table model with predefined column headers.
+     */
     public InventoryVM() {
         tableModel = new DefaultTableModel(
                 new String[]{"Product ID", "Product Name", "Category",
@@ -27,14 +30,27 @@ public class InventoryVM {
         );
     }
 
+    /**
+     * Retrieves the inventory table model.
+     *
+     * @return The DefaultTableModel containing inventory data.
+     */
     public DefaultTableModel getTableModel() {
         return tableModel;
     }
 
+    /**
+     * Sets the callback to be executed when data loading is complete.
+     *
+     * @param onDataLoaded Runnable callback function.
+     */
     public void setOnDataLoaded(Runnable onDataLoaded) {
         this.onDataLoaded = onDataLoaded;
     }
 
+    /**
+     * Loads inventory asynchronously using a SwingWorker to prevent UI freezing.
+     */
     public void loadInventoryAsync() {
         new SwingWorker<Void, Void>() {
             @Override
@@ -49,7 +65,9 @@ public class InventoryVM {
             }
         }.execute();
     }
-
+    /**
+     * Loads inventory data from the database and updates the table model.
+     */
     public void loadInventory() {
         String query = """
         SELECT 
@@ -106,6 +124,19 @@ public class InventoryVM {
         }
     }
 
+    /**
+     * Validates input data and adds a new product to the inventory.
+     *
+     * @param name           Product name.
+     * @param price          Unit price as a string.
+     * @param qty            Quantity as a string.
+     * @param threshold      Reorder level as a string.
+     * @param category       Product category.
+     * @param supplier       Supplier name.
+     * @param warehouse      Warehouse location.
+     * @param expirationDateStr Expiration date as a string.
+     * @return True if product addition is successful, false otherwise.
+     */
     public boolean validateAndAddProduct(String name, String price, String qty, String threshold,
                                          String category, String supplier, String warehouse, String expirationDateStr) {
         double unitPrice;
@@ -117,15 +148,15 @@ public class InventoryVM {
             quantity = Integer.parseInt(qty);
             reorderLevel = Integer.parseInt(threshold);
         } catch (NumberFormatException e) {
-            System.err.println("❌ Validation Error: Invalid number format.");
+            System.err.println("Validation Error: Invalid number format.");
             return false;
         }
 
-        // ✅ Convert Expiration Date (only if provided)
+        // Convert Expiration Date (only if provided)
         if (expirationDateStr != null && !expirationDateStr.isEmpty() && !expirationDateStr.equalsIgnoreCase("N/A")) {
             expirationDate = parseDate(expirationDateStr);
             if (expirationDate == null) {
-                System.err.println("❌ Validation Error: Invalid expiration date.");
+                System.err.println("Validation Error: Invalid expiration date.");
                 return false;
             }
         }
@@ -133,7 +164,7 @@ public class InventoryVM {
         try (Connection conn = DatabaseConnector.getConnection()) {
             conn.setAutoCommit(false);
 
-            // ✅ Check if product already exists
+            // Check if product already exists
             ProductDAO productDAO = new ProductDAO();
             Product existingProduct = productDAO.getProductByName(name);
 
@@ -149,21 +180,42 @@ public class InventoryVM {
 
             return success;
         } catch (SQLException e) {
-            System.err.println("❌ Database Error in validateAndAddProduct(): " + e.getMessage());
+            System.err.println("Database Error in validateAndAddProduct(): " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
-    // Utility Method to Convert String (YYYY-MM-DD) to `java.sql.Date`
+    /**
+     * Utility method to convert a date string (YYYY-MM-DD) to `java.sql.Date`.
+     *
+     * @param dateStr The date string.
+     * @return A `java.sql.Date` object, or null if the format is invalid.
+     */
     private Date parseDate(String dateStr) {
         try {
-            return Date.valueOf(dateStr);  // ✅ Directly convert to java.sql.Date
+            return Date.valueOf(dateStr);
         } catch (IllegalArgumentException e) {
-            return null;  // ❌ Invalid date format
+            return null;
         }
     }
 
+    /**
+     * Adds a new product to the inventory or updates the quantity if the product already exists.
+     * This method inserts a new product if it does not exist or updates the stock for an existing product.
+     *
+     * @param conn            The database connection to use for the operation.
+     * @param existingProduct The existing product instance if found, or null if the product is new.
+     * @param name            The name of the product.
+     * @param unitPrice       The price per unit of the product.
+     * @param quantity        The initial stock quantity of the product.
+     * @param reorderLevel    The threshold at which the product should be reordered.
+     * @param category        The category to which the product belongs.
+     * @param supplier        The supplier of the product.
+     * @param warehouse       The warehouse where the product is stored.
+     * @param expirationDate  The expiration date of the product, if applicable.
+     * @return True if the product is successfully added or updated, false otherwise.
+     */
     private boolean addProduct(Connection conn, Product existingProduct, String name, double unitPrice, int quantity,
                                int reorderLevel, String category, String supplier, String warehouse, Date expirationDate) {
         PreparedStatement productStmt = null;
@@ -174,7 +226,7 @@ public class InventoryVM {
             InventoryDAO inventoryDAO = new InventoryDAO();
             int productId;
 
-            // ✅ If product doesn't exist, insert it
+            // If the product does not exist, insert it into the products table
             if (existingProduct == null) {
                 String productQuery = """
                 INSERT INTO products (product_name, unit_price, reorder_level, category_id, supplier_id)
@@ -190,53 +242,57 @@ public class InventoryVM {
                 productStmt.setString(4, category);
                 productStmt.setString(5, supplier);
 
+                // Execute the insert statement
                 int affectedRows = productStmt.executeUpdate();
                 if (affectedRows == 0) {
-                    return false;
+                    return false; // No rows affected, insertion failed
                 }
 
-                // ✅ Retrieve the generated product_id
+                // Retrieve the generated product ID
                 generatedKeys = productStmt.getGeneratedKeys();
                 if (generatedKeys.next()) {
                     productId = generatedKeys.getInt(1);
                 } else {
-                    return false;
+                    return false; // Failed to get product ID
                 }
             } else {
+                // If the product exists, get its product ID
                 productId = existingProduct.getProductId();
             }
 
-            // ✅ Fetch warehouse ID using DAO
+            // Fetch the warehouse ID for the given warehouse name
             int warehouseId = inventoryDAO.getWarehouseIdByName(warehouse);
             if (warehouseId == -1) {
-                System.err.println("❌ Error: Warehouse not found: " + warehouse);
+                System.err.println("Error: Warehouse not found: " + warehouse);
                 return false;
             }
 
-            // ✅ Check if inventory exists for this product in the specified warehouse
+            // Check if inventory already exists for this product in the specified warehouse
             Inventory existingInventory = inventoryDAO.getInventoryByProductAndWarehouse(productId, warehouseId);
 
-            // ✅ Use Connection for insertInventory and updateInventoryQuantity
             if (existingInventory == null) {
+                // If inventory does not exist, insert a new record
                 boolean insertSuccess = inventoryDAO.insertInventory(conn, new Inventory(productId, warehouseId, quantity, expirationDate));
                 if (!insertSuccess) {
-                    conn.rollback();
+                    conn.rollback(); // Rollback transaction on failure
                     return false;
                 }
             } else {
+                // If inventory exists, update the quantity
                 int newQuantity = existingInventory.getQuantity() + quantity;
                 boolean updateSuccess = inventoryDAO.updateInventoryQuantity(conn, existingInventory.getInventoryId(), newQuantity);
                 if (!updateSuccess) {
-                    conn.rollback();
+                    conn.rollback(); // Rollback transaction on failure
                     return false;
                 }
             }
 
-            return true;
+            return true; // Operation successful
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         } finally {
+            // Close resources to prevent memory leaks
             try {
                 if (generatedKeys != null) generatedKeys.close();
                 if (productStmt != null) productStmt.close();
@@ -246,6 +302,12 @@ public class InventoryVM {
         }
     }
 
+
+    /**
+     * Retrieves all active product categories from the database.
+     *
+     * @return An array of category names.
+     */
     public String[] getCategories() {
         List<String> categories = new ArrayList<>();
         String query = "SELECT category_name FROM categories WHERE is_active = true";
@@ -253,7 +315,6 @@ public class InventoryVM {
         try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
-
             while (rs.next()) {
                 categories.add(rs.getString("category_name"));
             }
@@ -263,6 +324,11 @@ public class InventoryVM {
         return categories.toArray(new String[0]);
     }
 
+    /**
+     * Retrieves all active suppliers from the database.
+     *
+     * @return An array of supplier names.
+     */
     public String[] getSuppliers() {
         List<String> suppliers = new ArrayList<>();
         String query = "SELECT supplier_name FROM suppliers WHERE is_active = true";
@@ -270,7 +336,6 @@ public class InventoryVM {
         try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
-
             while (rs.next()) {
                 suppliers.add(rs.getString("supplier_name"));
             }
@@ -280,6 +345,11 @@ public class InventoryVM {
         return suppliers.toArray(new String[0]);
     }
 
+    /**
+     * Retrieves all active warehouses from the database.
+     *
+     * @return An array of warehouse names.
+     */
     public String[] getWarehouses() {
         List<String> warehouses = new ArrayList<>();
         String query = "SELECT warehouse_name FROM warehouses WHERE is_active = true";
@@ -287,7 +357,6 @@ public class InventoryVM {
         try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
-
             while (rs.next()) {
                 warehouses.add(rs.getString("warehouse_name"));
             }
@@ -297,6 +366,13 @@ public class InventoryVM {
         return warehouses.toArray(new String[0]);
     }
 
+    /**
+     * Filters the inventory based on stock status (e.g., "In-stock", "Low stock", "Out of stock").
+     * This method retrieves inventory records from the database that match the given stock status
+     * and updates the table model accordingly.
+     *
+     * @param stockStatus The stock status to filter by (e.g., "Low stock", "Out of stock", "In-stock").
+     */
     public void filterInventory(String stockStatus) {
         String query = """
         SELECT 
@@ -319,16 +395,20 @@ public class InventoryVM {
         JOIN categories c ON p.category_id = c.category_id
         JOIN suppliers s ON p.supplier_id = s.supplier_id
         JOIN warehouses w ON i.warehouse_id = w.warehouse_id
-        HAVING stock_status = ?; -- ✅ Optimized filtering
+        HAVING stock_status = ?; -- Optimized filtering
     """;
 
         try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
+            // Bind the stock status parameter to the prepared statement
             stmt.setString(1, stockStatus);
             ResultSet rs = stmt.executeQuery();
-            tableModel.setRowCount(0); // ✅ Clear previous data
 
+            // Clear previous table data before inserting new rows
+            tableModel.setRowCount(0);
+
+            // Iterate through the result set and populate the table model
             while (rs.next()) {
                 tableModel.addRow(new Object[]{
                         rs.getInt("product_id"),

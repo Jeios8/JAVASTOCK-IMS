@@ -11,17 +11,19 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
 
-public class CreateOrderDialog extends JDialog {
-    private JComboBox<String> customerDropdown, statusDropdown;
+public class CreateCustomerOrderDialog extends JDialog {
+    private JTextField firstNameField, lastNameField, phoneField, emailField;
+    private JComboBox<String> itemDropdown;
+    private JTextField quantityField;
     private JDatePickerImpl orderDatePicker;
     private JButton addButton, cancelButton;
     private OrdersVM ordersVM;
 
-    public CreateOrderDialog(JFrame parent, OrdersVM ordersVM) {
-        super(parent, "Create Order", true);
+    public CreateCustomerOrderDialog(JFrame parent, OrdersVM ordersVM) {
+        super(parent, "Create Customer Order", true);
         this.ordersVM = ordersVM;
         setLayout(new BorderLayout());
-        setSize(420, 350);
+        setSize(450, 400);
         setLocationRelativeTo(parent);
         setResizable(false);
 
@@ -44,26 +46,45 @@ public class CreateOrderDialog extends JDialog {
         inputGbc.weightx = 0.6;
         inputGbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // **Dropdowns with Rounded Borders**
-        customerDropdown = createRoundedDropdown(DataPreloader.getData("customers"));
-        statusDropdown = createRoundedDropdown(new String[]{"Pending", "Processed", "Shipped", "Delivered", "Cancelled"});
+        // **Customer Information Panel**
+        firstNameField = createTextField("Enter First Name");
+        lastNameField = createTextField("Enter Last Name");
+        phoneField = createTextField("Enter Phone");
+        emailField = createTextField("Enter Email");
 
-        // **Date Picker for Order Date**
-        orderDatePicker = createDatePicker();
-
-        // **Add Labels & Fields**
-        mainPanel.add(new JLabel("Customer:"), gbc);
-        mainPanel.add(customerDropdown, inputGbc);
+        mainPanel.add(new JLabel("First Name:"), gbc);
+        mainPanel.add(firstNameField, inputGbc);
         gbc.gridy++;
         inputGbc.gridy++;
 
-        mainPanel.add(new JLabel("Order Date:"), gbc);
-        mainPanel.add(orderDatePicker, inputGbc);
+        mainPanel.add(new JLabel("Last Name:"), gbc);
+        mainPanel.add(lastNameField, inputGbc);
         gbc.gridy++;
         inputGbc.gridy++;
 
-        mainPanel.add(new JLabel("Order Status:"), gbc);
-        mainPanel.add(statusDropdown, inputGbc);
+        mainPanel.add(new JLabel("Phone:"), gbc);
+        mainPanel.add(phoneField, inputGbc);
+        gbc.gridy++;
+        inputGbc.gridy++;
+
+        mainPanel.add(new JLabel("Email:"), gbc);
+        mainPanel.add(emailField, inputGbc);
+        gbc.gridy++;
+        inputGbc.gridy++;
+
+        // **Order Details Panel**
+        itemDropdown = createRoundedDropdown(DataPreloader.getData("products"));
+        quantityField = createTextField("Enter Quantity");
+
+        mainPanel.add(new JLabel("Item Name:"), gbc);
+        mainPanel.add(itemDropdown, inputGbc);
+        gbc.gridy++;
+        inputGbc.gridy++;
+
+        mainPanel.add(new JLabel("Quantity:"), gbc);
+        mainPanel.add(quantityField, inputGbc);
+        gbc.gridy++;
+        inputGbc.gridy++;
 
         add(mainPanel, BorderLayout.CENTER);
 
@@ -87,7 +108,12 @@ public class CreateOrderDialog extends JDialog {
         setVisible(true);
     }
 
-    // **Rounded JComboBox**
+    private JTextField createTextField(String placeholder) {
+        JTextField field = new JTextField(placeholder);
+        field.setColumns(15);
+        return field;
+    }
+
     private JComboBox<String> createRoundedDropdown(String[] items) {
         JComboBox<String> comboBox = new JComboBox<>(items);
         comboBox.setBorder(new RoundedBorder(10));
@@ -95,7 +121,6 @@ public class CreateOrderDialog extends JDialog {
         return comboBox;
     }
 
-    // **Rounded Buttons**
     private JButton createRoundedButton(String text, Color color) {
         JButton button = new JButton(text);
         button.setBackground(color);
@@ -106,14 +131,11 @@ public class CreateOrderDialog extends JDialog {
         return button;
     }
 
-    // **Rounded Border for UI Components**
     static class RoundedBorder extends javax.swing.border.AbstractBorder {
         private final int radius;
-
         public RoundedBorder(int radius) {
             this.radius = radius;
         }
-
         @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             Graphics2D g2d = (Graphics2D) g.create();
@@ -124,19 +146,17 @@ public class CreateOrderDialog extends JDialog {
         }
     }
 
-    // **Load dropdown values asynchronously**
     private void loadDropdownData() {
         new SwingWorker<String[], Void>() {
             @Override
             protected String[] doInBackground() {
-                return ordersVM.getCustomerNames();
+                return ordersVM.getProductNames();
             }
-
             @Override
             protected void done() {
                 try {
                     String[] data = get();
-                    customerDropdown.setModel(new DefaultComboBoxModel<>(data));
+                    itemDropdown.setModel(new DefaultComboBoxModel<>(data));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -145,53 +165,20 @@ public class CreateOrderDialog extends JDialog {
     }
 
     private void createOrder() {
-        java.util.Date selectedDate = (java.util.Date) orderDatePicker.getModel().getValue();
-        String orderDate = selectedDate != null ? new SimpleDateFormat("yyyy-MM-dd").format(selectedDate) : "N/A";
-
-        boolean success = ordersVM.addOrder(
-                customerDropdown.getSelectedIndex() + 1001, // Adjust index to match DB ID starting at 1001
-                orderDate,
-                (String) statusDropdown.getSelectedItem()
+        boolean success = ordersVM.addCustomerOrder(
+                firstNameField.getText(),
+                lastNameField.getText(),
+                phoneField.getText(),
+                emailField.getText(),
+                (String) itemDropdown.getSelectedItem(),
+                Integer.parseInt(quantityField.getText())
         );
 
         if (success) {
-            JOptionPane.showMessageDialog(this, "Order created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Customer order created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             dispose();
         } else {
             JOptionPane.showMessageDialog(this, "Failed to create order.", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private JDatePickerImpl createDatePicker() {
-        UtilDateModel model = new UtilDateModel();
-        JDatePanelImpl datePanel = new JDatePanelImpl(model, getDateProperties());
-        JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
-        datePicker.setPreferredSize(new Dimension(200, 30));
-        return datePicker;
-    }
-
-    private Properties getDateProperties() {
-        Properties p = new Properties();
-        p.put("text.today", "Today");
-        p.put("text.month", "Month");
-        p.put("text.year", "Year");
-        return p;
-    }
-
-    class DateLabelFormatter extends JFormattedTextField.AbstractFormatter {
-        private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
-        @Override
-        public Object stringToValue(String text) throws ParseException {
-            return dateFormat.parse(text);
-        }
-
-        @Override
-        public String valueToString(Object value) {
-            if (value != null) {
-                return dateFormat.format(((java.util.Calendar) value).getTime());
-            }
-            return "";
         }
     }
 }
