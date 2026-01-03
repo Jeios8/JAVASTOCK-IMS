@@ -58,7 +58,7 @@ JAVASTOCK-IMS/
 ## **Setup Instructions**
 1. Clone the repository:
 ```bash
-git clone https://github.com/<your-username>/JAVASTOCK-IMS.git
+git clone https://github.com/Jeios8/JAVASTOCK-IMS.git
 ```
 2. Configure the database:
 - Update src/resources/application.properties with the MySQL database credentials.
